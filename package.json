@@ -1,7 +1,7 @@
 {
-  "name": "firstextension",
-  "displayName": "firstExtension",
-  "description": "firstTry",
+  "name": "smartcode",
+  "displayName": "smartCode",
+  "description": "The best no cap",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.87.0"
@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "firstextension.helloWorld",
-        "title": "Hello World"
+        "command": "firstextension.smartCode",
+        "title": "Smart Code"
       }
     ]
   },
