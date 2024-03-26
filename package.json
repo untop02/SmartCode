@@ -12,19 +12,38 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "package-explorer": [
+        {
+          "type": "webview",
+          "id": "smartCode.codeView",
+          "name": ""
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "firstextension.smartCode",
+        "command": "smartCode.open",
         "title": "Smart Code"
       }
     ],
     "keybindings": [
       {
-        "command": "firstextension.smartCode",
+        "command": "smartCode.open",
         "key": "ctrl+d",
         "mac": "cmd+d"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "type": "webview",
+          "id": "package-explorer",
+          "title": "Smart Code",
+          "icon": "$(snake)"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -1,80 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 
+    <!--Only used for testing and creation of html-->
+    <!--Copy any changes to extension.ts in src!-->
+
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <script>
-            const vscode = acquireVsCodeApi();
-
-            function clickFunction() {
-                const p1 = document.getElementById("p1");
-                if (p1) {
-                    const currentColor = p1.style.color;
-                    if (currentColor === "red") {
-                        p1.style.color = "yellow";
-                    } else {
-                        p1.style.color = "red";
-                    }
-                }
-            }
-
-            function sendMessage() {
-                var inputText = document.getElementById("uinput").value;
-                vscode.postMessage({ command: "alert", text: inputText });
-            }
-        </script>
-        <style>
-            img {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            p {
-                text-align: center;
-            }
-
-            h1 {
-                text-align: center;
-            }
-
-            input {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                width: 50vw;
-                max-width: 300px;
-                height: 10vh;
-                max-height: 20px;
-            }
-
-            button {
-                margin-top: 5px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            div {
-                text-align: center;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="/out/style.css">
+        <title>Smart Code</title>
+        <script src="/out/script.js"></script>
     </head>
 
     <body>
-        <div>
+        <header>
             <h1>Smart Code</h1>
             <img src="https://www.rollingstone.com/wp-content/uploads/2022/04/nicolas-cage-on-nicolas-cage-massive-talent.jpg?w=1581&h=1054&crop=1"
                 alt="" srcset="" width="300">
-            <p id='p1' style="color: yellow">This has some text to show to the user</p>
-            <label for="uinput"></label>
-            <input type="text" id="uinput"></input>
-            <div>
-                <button type="button" onclick="sendMessage()">Send Text</button>
-                <button type="button" onclick="clickFunction()"> Click me!</button>
-            </div>
+            <p id='p1'>This has some text to show to the user</p>
+        </header>
+
+        <div class="chat-container">
+            <!-- Chat content goes here -->
         </div>
+
+        <footer>
+            <div class="footer-container">
+                <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+                <button type="button" id="sendButton">Send Text</button>
+            </div>
+        </footer>
     </body>
 
 </html>

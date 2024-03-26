@@ -1,57 +1,95 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "Smart Code" is now active!');
-  let consoleChannel = vscode.window.createOutputChannel("Console");
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with  registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand(
-    "firstextension.smartCode",
-    function () {
-      // The code you place here will be executed every time your command is executed
 
-      // Display a message box to the user
-      vscode.window.showInformationMessage("Smart Code go BRR");
-
-      //Creates new Tab
-      const panel = vscode.window.createWebviewPanel(
-        "SmartCode",
-        "Visual Studio Text Extension",
-        vscode.ViewColumn.One,
-        { enableScripts: true }
-      );
-
-      panel.webview.html = getWebContent(context);
-
-      panel.webview.onDidReceiveMessage((message) => {
-        consoleChannel.append(message);
-        if (message.command === "alert") {
-          vscode.window.showInformationMessage(
-            message.text !== "" ? message.text : "No input :("
-          );
-        }
-      });
-    }
+  const provider = new SmartCodeProvider(context.extensionUri);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      SmartCodeProvider.viewType,
+      provider
+    )
   );
-  context.subscriptions.push(disposable);
+  //Pitää korjata että voi avata taas hotkeyllä
+  context.subscriptions.push(
+    vscode.commands.registerCommand("smartCode.open", () => {})
+  );
+}
 
-  function getWebContent(context: vscode.ExtensionContext): string {
-    const htmlPath = vscode.Uri.joinPath(
-      context.extensionUri,
-      "src\\extension.html"
+class SmartCodeProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = "smartCode.codeView";
+
+  private _view?: vscode.WebviewView;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  public resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken
+  ) {
+    this._view = webviewView;
+
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this._extensionUri],
+    };
+
+    let consoleChannel = vscode.window.createOutputChannel("Console");
+
+    webviewView.webview.html = this.getWebContent(webviewView.webview);
+
+    webviewView.webview.onDidReceiveMessage((message) => {
+      consoleChannel.append(message);
+      if (message.command === "alert") {
+        vscode.window.showInformationMessage(
+          message.text !== "" ? message.text : "No input :("
+        );
+      }
+    });
+  }
+
+  private getWebContent(webview: vscode.Webview): string {
+    const styleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "style.css")
+    );
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "out", "script.js")
     );
 
-    const htmlContent = fs.readFileSync(htmlPath.fsPath, "utf8");
+    return `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" type="text/css" href="${styleUri}">
+            <title>Smart Code</title>
+        </head>
 
-    return htmlContent;
+        <body>
+            <header>
+                <h1>Smart Code</h1>
+                <img src="https://www.rollingstone.com/wp-content/uploads/2022/04/nicolas-cage-on-nicolas-cage-massive-talent.jpg?w=1581&h=1054&crop=1"
+                    alt="" srcset="" width="300">
+                <p id='p1'>This has some text to show to the user</p>
+            </header>
+
+            <div class="chat-container">
+                <!-- Chat content goes here -->
+            </div>
+
+            <footer>
+                <div class="footer-container">
+                    <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+                    <button type="button" id="sendButton">Send Text</button>
+                </div>
+            </footer>
+            <script src="${scriptUri}"></script>
+        </body>
+        </html>`;
   }
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
