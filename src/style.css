@@ -1,32 +1,49 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+header, .chat-container{
+  width: 100%;
+}
+
+footer {
+  position: fixed;
+  bottom: 10px;
+  width: 90%;
+  padding: 0;
+}
+
+.footer-container {
+  display: flex;
+  width: 90%;
+  justify-content: space-between;
+}
+
+.footer-container input {
+  width: 100%;
+}
+
 img {
   display: block;
   margin-left: auto;
   margin-right: auto;
 }
 
-p {
+p, #p1 {
   text-align: center;
+  color: darkgray;
 }
 
 h1 {
   text-align: center;
 }
 
-input {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50vw;
-  max-width: 300px;
-  height: 10vh;
-  max-height: 20px;
-}
-
-button {
-  margin-top: 5px;
-  margin-left: auto;
-  margin-right: auto;
-}
 div {
   text-align: center;
 }

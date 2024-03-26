@@ -4,6 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="style.css">
         <title>Document</title>
         <script>
             const vscode = acquireVsCodeApi();
@@ -25,56 +26,77 @@
                 vscode.postMessage({ command: "alert", text: inputText });
             }
         </script>
-        <style>
-            img {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
+        <style>  
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Times New Roman', Times, serif;
+}
 
-            p {
-                text-align: center;
-            }
+header, .chat-container{
+  width: 100%;
+}
 
-            h1 {
-                text-align: center;
-            }
+footer {
+  position: fixed;
+  bottom: 10px;
+  width: 95%;
+  padding: 0;
+}
 
-            input {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                width: 50vw;
-                max-width: 300px;
-                height: 10vh;
-                max-height: 20px;
-            }
+.footer-container {
+  display: flex;
+  width: 90%;
+  justify-content: space-between;
+}
 
-            button {
-                margin-top: 5px;
-                margin-left: auto;
-                margin-right: auto;
-            }
+.footer-container input {
+  width: 100%;
+}
 
-            div {
-                text-align: center;
-            }
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+p, #p1 {
+  text-align: center;
+  color: darkgray;
+}
+
+h1 {
+  text-align: center;
+}
+
+div {
+  text-align: center;
+}
         </style>
     </head>
 
     <body>
-        <div>
+        <header>
             <h1>Smart Code</h1>
             <img src="https://www.rollingstone.com/wp-content/uploads/2022/04/nicolas-cage-on-nicolas-cage-massive-talent.jpg?w=1581&h=1054&crop=1"
                 alt="" srcset="" width="300">
             <p id='p1' style="color: yellow">This has some text to show to the user</p>
-            <label for="uinput"></label>
-            <input type="text" id="uinput"></input>
-            <div>
-                <button type="button" onclick="sendMessage()">Send Text</button>
-                <button type="button" onclick="clickFunction()"> Click me!</button>
-            </div>
+        </header>
+
+        <div class="chat-container">
+            <!-- Chat content goes here -->
         </div>
+
+        <footer>
+            <div class="footer-container">
+              <input type="text" id="uinput" placeholder="Ask SmartCode..."></input>
+              <button type="button" onclick="sendMessage()">Send Text</button>
+            </div>
+          </footer>
     </body>
 
 </html>
