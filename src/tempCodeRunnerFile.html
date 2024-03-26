@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <script>
+            const vscode = acquireVsCodeApi();
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const p1 = document.getElementById('p1');
+                p1.style.color = 'yellow';
+
+            });
+            function clickFunction() {
+                                const p1 = document.getElementById('p1');
+
+                var currentColor = p1.style.color;
+                if (currentColor == "red") {
+                    console.log(currentColor);
+                    p1.style.color = 'yellow';
+                } else {
+                    console.log(currentColor);
+                    p1.style.color = 'red';
+                }
+            }
+            
+            function sendMessage() {
+                vscode.postMessage({ command: 'alert', text: 'Hello from webview' });
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Smart Code</h1>
+        <img src="https://www.rollingstone.com/wp-content/uploads/2022/04/nicolas-cage-on-nicolas-cage-massive-talent.jpg?w=1581&h=1054&crop=1"
+            alt="" srcset="" width="300">
+        <p id='p1'>This has some text to show to the user</p>
+        <label for="tinput"></label>
+        <input type="text"></input>>
+        <button type="button" onclick="clickFunction()"> Click me!</button>
+        <button type="button" onclick="sendMessage()">Send hello!</button>
+    </body>
+
+</html>

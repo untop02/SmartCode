@@ -1,5 +1,3 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import * as fs from "fs";
 
@@ -20,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       // Display a message box to the user
       vscode.window.showInformationMessage("Smart Code go BRR");
+
       //Creates new Tab
       const panel = vscode.window.createWebviewPanel(
         "SmartCode",
@@ -33,7 +32,9 @@ export function activate(context: vscode.ExtensionContext) {
       panel.webview.onDidReceiveMessage((message) => {
         consoleChannel.append(message);
         if (message.command === "alert") {
-          vscode.window.showInformationMessage(message.text);
+          vscode.window.showInformationMessage(
+            message.text !== "" ? message.text : "No input :("
+          );
         }
       });
     }

@@ -17,6 +17,13 @@
         "command": "firstextension.smartCode",
         "title": "Smart Code"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "firstextension.smartCode",
+        "key": "ctrl+d",
+        "mac": "cmd+d"
+      }
     ]
   },
   "scripts": {

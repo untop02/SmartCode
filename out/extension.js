@@ -24,8 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 // This method is called when your extension is activated
@@ -48,7 +46,7 @@ function activate(context) {
         panel.webview.onDidReceiveMessage((message) => {
             consoleChannel.append(message);
             if (message.command === "alert") {
-                vscode.window.showInformationMessage(message.text);
+                vscode.window.showInformationMessage(message.text !== "" ? message.text : "No input :(");
             }
         });
     });
