@@ -87,7 +87,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
                     <button type="button" id="sendButton">Send Text</button>
                 </div>
             </footer>
-            <script src="${scriptUri}"></script>
+            <script type="module" src="${scriptUri}"></script>
         </body>
         </html>`;
   }

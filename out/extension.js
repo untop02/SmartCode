@@ -86,7 +86,7 @@ class SmartCodeProvider {
                     <button type="button" id="sendButton">Send Text</button>
                 </div>
             </footer>
-            <script src="${scriptUri}"></script>
+            <script type="module" src="${scriptUri}"></script>
         </body>
         </html>`;
     }
