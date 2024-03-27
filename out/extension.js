@@ -26,13 +26,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 function activate(context) {
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SmartCodeProvider.viewType, provider));
-    //Pitää korjata että voi avata taas hotkeyllä
-    context.subscriptions.push(vscode.commands.registerCommand("smartCode.open", () => { }));
+    context.subscriptions.push(vscode.commands.registerCommand("smartCode.openView", () => {
+        vscode.commands.executeCommand("smartCode.codeView.focus");
+    }));
 }
 exports.activate = activate;
 class SmartCodeProvider {

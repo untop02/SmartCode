@@ -13,7 +13,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "views": {
-      "package-explorer": [
+      "smart-code": [
         {
           "type": "webview",
           "id": "smartCode.codeView",
@@ -23,13 +23,13 @@
     },
     "commands": [
       {
-        "command": "smartCode.open",
-        "title": "Smart Code"
+        "command": "smartCode.openView",
+        "title": "Open Smart Code View"
       }
     ],
     "keybindings": [
       {
-        "command": "smartCode.open",
+        "command": "smartCode.openView",
         "key": "ctrl+d",
         "mac": "cmd+d"
       }
@@ -38,7 +38,7 @@
       "activitybar": [
         {
           "type": "webview",
-          "id": "package-explorer",
+          "id": "smart-code",
           "title": "Smart Code",
           "icon": "$(snake)"
         }

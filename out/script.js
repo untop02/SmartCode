@@ -1,6 +1,8 @@
 "use strict";
 const vscode = acquireVsCodeApi();
 
+const div = document.getElementsByClassName('chat-container');
+
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState")) || {};
 }
@@ -19,15 +21,10 @@ function sendMessage() {
 }
 
 document.getElementById('sendButton').addEventListener('click', () => {
+
     sendMessage();
 });
 
-window.addEventListener('message', event => {
-    const message = event.data;
-    if (message.type === 'alert') {
-        sendMessage();
-    }
-});
 
 document.addEventListener("DOMContentLoaded", function () {
     initializeState();
