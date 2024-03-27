@@ -68,7 +68,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             <link rel="stylesheet" type="text/css" href="${styleUri}">
             <title>Smart Code</title>
         </head>
-
         <body>
             <header>
                 <h1>Smart Code</h1>

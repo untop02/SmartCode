@@ -1,5 +1,5 @@
 "use strict";
-const vscode = acquireVsCodeApi();
+Object.defineProperty(exports, "__esModule", { value: true });
 const div = document.getElementsByClassName("chat-container");
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "") || {};
@@ -20,4 +20,4 @@ document.getElementById("sendButton").addEventListener("click", () => {
 document.addEventListener("DOMContentLoaded", function () {
     initializeState();
 });
-//# sourceMappingURL=script.js.map
+//# sourceMappingURL=script2.js.map
