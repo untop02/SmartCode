@@ -68,8 +68,9 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             <link rel="stylesheet" type="text/css" href="${styleUri}">
             <title>Smart Code</title>
         </head>
-
         <body>
+        <script>const vscode = acquireVsCodeApi();
+        </script>
             <header>
                 <h1>Smart Code</h1>
                 <img src="https://www.rollingstone.com/wp-content/uploads/2022/04/nicolas-cage-on-nicolas-cage-massive-talent.jpg?w=1581&h=1054&crop=1"
