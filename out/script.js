@@ -1,5 +1,4 @@
 "use strict";
-const vscode = acquireVsCodeApi();
 const div = document.getElementsByClassName("chat-container");
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "") || {};

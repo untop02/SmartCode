@@ -1,9 +1,8 @@
-type VSCode = {
+interface Vscode {
   postMessage(message: any): void;
-};
+}
 
-declare const vscode: VSCode;
-
+declare const vscode: Vscode;
 const div = document.getElementsByClassName("chat-container");
 
 function getState(): JSON | string {
