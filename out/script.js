@@ -6,6 +6,7 @@ function getState() {
 function setState(newState) {
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
+//Pitää ehkä säätää vielä koska poistaa
 function initializeState() {
     const currentState = getState();
     let inputField = document.getElementById("uInput");
