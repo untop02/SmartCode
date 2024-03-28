@@ -8,6 +8,8 @@ function setState(newState) {
 }
 function initializeState() {
     const currentState = getState();
+    let inputField = document.getElementById("uInput");
+    inputField.value = currentState;
 }
 function sendMessage() {
     let inputText = document.getElementById("uInput").value;
@@ -18,5 +20,9 @@ document.getElementById("sendButton").addEventListener("click", () => {
 });
 document.addEventListener("DOMContentLoaded", function () {
     initializeState();
+});
+document.getElementById("uInput")?.addEventListener("change", () => {
+    let inputText = document.getElementById("uInput").value;
+    setState(inputText);
 });
 //# sourceMappingURL=script.js.map

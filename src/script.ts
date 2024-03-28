@@ -11,8 +11,11 @@ function getState(): JSON | string {
 function setState(newState: any): void {
   localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
+//Pitää ehkä säätää vielä koska poistaa
 function initializeState(): void {
   const currentState = getState();
+  let inputField = document.getElementById("uInput") as HTMLInputElement;
+  inputField.value = currentState as string;
 }
 function sendMessage(): void {
   let inputText = (document.getElementById("uInput") as HTMLInputElement).value;
@@ -24,4 +27,8 @@ document.getElementById("sendButton")!.addEventListener("click", () => {
 
 document.addEventListener("DOMContentLoaded", function () {
   initializeState();
+});
+document.getElementById("uInput")?.addEventListener("change", () => {
+  let inputText = (document.getElementById("uInput") as HTMLInputElement).value;
+  setState(inputText);
 });
