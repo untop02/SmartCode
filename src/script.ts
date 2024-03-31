@@ -21,7 +21,7 @@ function sendMessage(): void {
   let inputText = (document.getElementById("uInput") as HTMLInputElement).value;
   vscode.postMessage({ command: "alert", text: inputText });
 }
-document.getElementById("sendButton")!.addEventListener("click", () => {
+document.getElementById("sendButton")?.addEventListener("click", () => {
   sendMessage();
 });
 
@@ -32,3 +32,4 @@ document.getElementById("uInput")?.addEventListener("change", () => {
   let inputText = (document.getElementById("uInput") as HTMLInputElement).value;
   setState(inputText);
 });
+

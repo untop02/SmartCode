@@ -12,38 +12,8 @@ function activate(context) {
     }));
 }
 exports.activate = activate;
-class aiApi {
-    openai = new openai_1.default({ baseURL: "http://boysedating.ddns.net:1234/v1", apiKey: "lm-studio" });
-    history = [
-        { "role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful." },
-    ];
-    currentMessage = "";
-    async api(input) {
-        if (input !== "") {
-            var usrInput = { "role": "user", "content": input };
-            this.history.push(usrInput);
-            const completion = await this.openai.chat.completions.create({
-                messages: this.history,
-                model: "gpt-3.5-turbo",
-                response_format: { type: "json_object" },
-                stream: true,
-            });
-            var new_message = { "role": "assistant", "content": "" };
-            for await (const chunk of completion) {
-                if (chunk.choices[0].delta.content) {
-                    new_message["content"] += chunk.choices[0].delta.content;
-                    console.log(new_message.content);
-                    this.currentMessage = new_message.content;
-                }
-                ;
-            }
-            this.history.push(new_message);
-        }
-    }
-}
 class SmartCodeProvider {
     _extensionUri;
-    ai = new aiApi;
     static viewType = "smartCode.codeView";
     _view;
     constructor(_extensionUri) {
@@ -60,10 +30,35 @@ class SmartCodeProvider {
         webviewView.webview.onDidReceiveMessage((message) => {
             consoleChannel.append(message);
             if (message.command === "alert") {
-                this.ai.api(message.text);
+                this.api(message.text);
                 vscode.window.showInformationMessage(message.text !== "" ? message.text : "No input :(");
             }
         });
+    }
+    openai = new openai_1.default({ baseURL: "http://boysedating.ddns.net:1234/v1", apiKey: "lm-studio" });
+    history = [
+        { "role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful." },
+    ];
+    async api(input) {
+        if (input !== "") {
+            var usrInput = { "role": "user", "content": input };
+            this.history.push(usrInput);
+            const completion = await this.openai.chat.completions.create({
+                messages: this.history,
+                model: "gpt-3.5-turbo",
+                response_format: { type: "json_object" },
+                stream: true,
+            });
+            var new_message = { "role": "assistant", "content": "" };
+            for await (const chunk of completion) {
+                if (chunk.choices[0].delta.content) {
+                    new_message["content"] += chunk.choices[0].delta.content;
+                    console.log(new_message.content);
+                    this._view?.webview.postMessage({ response: new_message.content });
+                }
+                this.history.push(new_message);
+            }
+        }
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
@@ -84,6 +79,16 @@ class SmartCodeProvider {
                 <img src="https://www.rollingstone.com/wp-content/uploads/2022/04/nicolas-cage-on-nicolas-cage-massive-talent.jpg?w=1581&h=1054&crop=1"
                     alt="" srcset="" width="300">
                 <p id='p1'>This has some text to show to the user</p>
+                <script>
+        const display = document.getElementById('p1');
+
+        // Handle the message inside the webview
+        window.addEventListener('message', event => {
+
+            const message = event.data; // The JSON data our extension sent
+            display.textContent = message.response
+        });
+    </script>
             </header>
 
             <div class="chat-container">
