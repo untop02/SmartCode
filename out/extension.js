@@ -1,30 +1,8 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
-const vscode = __importStar(require("vscode"));
+const vscode = require("vscode");
+const openai_1 = require("openai");
 function activate(context) {
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
@@ -52,9 +30,35 @@ class SmartCodeProvider {
         webviewView.webview.onDidReceiveMessage((message) => {
             consoleChannel.append(message);
             if (message.command === "alert") {
+                this.api(message.text);
                 vscode.window.showInformationMessage(message.text !== "" ? message.text : "No input :(");
             }
         });
+    }
+    openai = new openai_1.default({ baseURL: "http://boysedating.ddns.net:1234/v1", apiKey: "lm-studio" });
+    history = [
+        { "role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful." },
+    ];
+    async api(input) {
+        if (input !== "") {
+            var usrInput = { "role": "user", "content": input };
+            this.history.push(usrInput);
+            const completion = await this.openai.chat.completions.create({
+                messages: this.history,
+                model: "gpt-3.5-turbo",
+                response_format: { type: "json_object" },
+                stream: true,
+            });
+            var new_message = { "role": "assistant", "content": "" };
+            for await (const chunk of completion) {
+                if (chunk.choices[0].delta.content) {
+                    new_message.content += chunk.choices[0].delta.content;
+                    console.log(new_message.content);
+                    this._view?.webview.postMessage({ response: new_message.content });
+                }
+            }
+            this.history.push(new_message);
+        }
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
@@ -68,10 +72,22 @@ class SmartCodeProvider {
             <title>Smart Code</title>
         </head>
         <body>
+        <script>const vscode = acquireVsCodeApi();
+        </script>
             <header>
                 <img src="https://i.imgur.com/kycO1SS.gif"
                     alt="" srcset="" width="300">
                 <p id='p1'>This has some text to show to the user</p>
+                <script>
+        const display = document.getElementById('p1');
+
+        // Handle the message inside the webview
+        window.addEventListener('message', event => {
+
+            const message = event.data; // The JSON data our extension sent
+            display.textContent = message.response
+        });
+    </script>
             </header>
 
             <div class="chat-container">

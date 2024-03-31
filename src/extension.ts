@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-
+import OpenAI from "openai";
+import { ChatCompletionMessageParam } from "openai/resources";
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "Smart Code" is now active!');
 
@@ -24,7 +25,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly _extensionUri: vscode.Uri) { }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -45,11 +46,37 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((message) => {
       consoleChannel.append(message);
       if (message.command === "alert") {
+        this.api(message.text);
         vscode.window.showInformationMessage(
           message.text !== "" ? message.text : "No input :("
         );
       }
     });
+  }
+  private openai = new OpenAI({ baseURL: "http://boysedating.ddns.net:1234/v1", apiKey: "lm-studio" });
+  history = [
+    { "role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful." },
+  ];
+  async api(input: string) {
+    if (input !== "") {
+      var usrInput = { "role": "user", "content": input };
+      this.history.push(usrInput);
+      const completion = await this.openai.chat.completions.create({
+        messages: this.history as ChatCompletionMessageParam[],
+        model: "gpt-3.5-turbo",
+        response_format: { type: "json_object" },
+        stream: true,
+      });
+      var new_message = { "role": "assistant", "content": "" };
+      for await (const chunk of completion) {
+        if (chunk.choices[0].delta.content) {
+          new_message.content += chunk.choices[0].delta.content;
+          console.log(new_message.content);
+          this._view?.webview.postMessage({ response: new_message.content });
+        }
+      }
+      this.history.push(new_message);
+    }
   }
 
   private getWebContent(webview: vscode.Webview): string {
@@ -69,10 +96,22 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             <title>Smart Code</title>
         </head>
         <body>
+        <script>const vscode = acquireVsCodeApi();
+        </script>
             <header>
                 <img src="https://i.imgur.com/kycO1SS.gif"
                     alt="" srcset="" width="300">
                 <p id='p1'>This has some text to show to the user</p>
+                <script>
+        const display = document.getElementById('p1');
+
+        // Handle the message inside the webview
+        window.addEventListener('message', event => {
+
+            const message = event.data; // The JSON data our extension sent
+            display.textContent = message.response
+        });
+    </script>
             </header>
 
             <div class="chat-container">
@@ -91,4 +130,4 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   }
 }
 
-export function deactivate() {}
+export function deactivate() { }
