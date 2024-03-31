@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
+const openai_1 = require("openai");
 function activate(context) {
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
@@ -11,8 +12,38 @@ function activate(context) {
     }));
 }
 exports.activate = activate;
+class aiApi {
+    openai = new openai_1.default({ baseURL: "http://boysedating.ddns.net:1234/v1", apiKey: "lm-studio" });
+    history = [
+        { "role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful." },
+    ];
+    currentMessage = "";
+    async api(input) {
+        if (input !== "") {
+            var usrInput = { "role": "user", "content": input };
+            this.history.push(usrInput);
+            const completion = await this.openai.chat.completions.create({
+                messages: this.history,
+                model: "gpt-3.5-turbo",
+                response_format: { type: "json_object" },
+                stream: true,
+            });
+            var new_message = { "role": "assistant", "content": "" };
+            for await (const chunk of completion) {
+                if (chunk.choices[0].delta.content) {
+                    new_message["content"] += chunk.choices[0].delta.content;
+                    console.log(new_message.content);
+                    this.currentMessage = new_message.content;
+                }
+                ;
+            }
+            this.history.push(new_message);
+        }
+    }
+}
 class SmartCodeProvider {
     _extensionUri;
+    ai = new aiApi;
     static viewType = "smartCode.codeView";
     _view;
     constructor(_extensionUri) {
@@ -29,6 +60,7 @@ class SmartCodeProvider {
         webviewView.webview.onDidReceiveMessage((message) => {
             consoleChannel.append(message);
             if (message.command === "alert") {
+                this.ai.api(message.text);
                 vscode.window.showInformationMessage(message.text !== "" ? message.text : "No input :(");
             }
         });
