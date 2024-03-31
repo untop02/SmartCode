@@ -52,12 +52,12 @@ class SmartCodeProvider {
             var new_message = { "role": "assistant", "content": "" };
             for await (const chunk of completion) {
                 if (chunk.choices[0].delta.content) {
-                    new_message["content"] += chunk.choices[0].delta.content;
+                    new_message.content += chunk.choices[0].delta.content;
                     console.log(new_message.content);
                     this._view?.webview.postMessage({ response: new_message.content });
                 }
-                this.history.push(new_message);
             }
+            this.history.push(new_message);
         }
     }
     getWebContent(webview) {
