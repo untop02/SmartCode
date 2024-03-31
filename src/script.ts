@@ -1,3 +1,5 @@
+import AiApi from "./aiApi";
+const ai = new AiApi;
 interface Vscode {
   postMessage(message: any): void;
 }
@@ -20,6 +22,7 @@ function initializeState(): void {
 function sendMessage(): void {
   let inputText = (document.getElementById("uInput") as HTMLInputElement).value;
   vscode.postMessage({ command: "alert", text: inputText });
+  ai.call(inputText);
 }
 document.getElementById("sendButton")!.addEventListener("click", () => {
   sendMessage();

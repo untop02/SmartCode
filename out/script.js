@@ -1,8 +1,7 @@
 "use strict";
-import AiApi from "./aiApi.js"
+import AiApi from "./aiApi.js";
+const ai = new AiApi;
 const div = document.getElementsByClassName("chat-container");
-
-const ai = new AiApi.__esModule.valueOf;
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "") || {};
 }
@@ -15,11 +14,10 @@ function initializeState() {
     let inputField = document.getElementById("uInput");
     inputField.value = currentState;
 }
-async function sendMessage() {
+function sendMessage() {
     let inputText = document.getElementById("uInput").value;
     vscode.postMessage({ command: "alert", text: inputText });
-    await ai.call(inputText)
-    console.log("FUk")
+    ai.call(inputText);
 }
 document.getElementById("sendButton").addEventListener("click", () => {
     sendMessage();

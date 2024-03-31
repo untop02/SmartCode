@@ -65,6 +65,5 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "openai": "^4.29.2"
   }
 }
