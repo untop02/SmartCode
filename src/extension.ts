@@ -121,7 +121,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             <footer>
                 <div class="footer-container">
                     <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
-                    <button type="button" id="sendButton">Send Text</button>
+                    <button type="button" id="sendButton">Send</button>
                 </div>
             </footer>
             <script src="${scriptUri}"></script>
