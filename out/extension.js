@@ -96,8 +96,12 @@ class SmartCodeProvider {
 
             <footer>
                 <div class="footer-container">
-                    <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+                <div class="input-container">
+                    <textarea type="text" id="uInput" placeholder="Ask SmartCode..." rows="20" cols="50"></textarea>
+                    </div>
+                    <div class="button-container">
                     <button type="button" id="sendButton">Send</button>
+                    </div>
                 </div>
             </footer>
             <script src="${scriptUri}"></script>
