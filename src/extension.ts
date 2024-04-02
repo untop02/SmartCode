@@ -101,7 +101,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             <header>
                 <img src="https://i.imgur.com/kycO1SS.gif"
                     alt="" srcset="" width="300">
-                <p id='p1'>This has some text to show to the user</p>
+                <p id='p1'>This is where I will reply</p>
                 <script>
         const display = document.getElementById('p1');
 

@@ -77,7 +77,7 @@ class SmartCodeProvider {
             <header>
                 <img src="https://i.imgur.com/kycO1SS.gif"
                     alt="" srcset="" width="300">
-                <p id='p1'>This has some text to show to the user</p>
+                <p id='p1'>This is where I will reply</p>
                 <script>
         const display = document.getElementById('p1');
 
@@ -95,13 +95,11 @@ class SmartCodeProvider {
             </div>
 
             <footer>
+            <div>
+                        <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+            </div>
                 <div class="footer-container">
-                <div class="input-container">
-                    <textarea type="text" id="uInput" placeholder="Ask SmartCode..." rows="20" cols="50"></textarea>
-                    </div>
-                    <div class="button-container">
                     <button type="button" id="sendButton">Send</button>
-                    </div>
                 </div>
             </footer>
             <script src="${scriptUri}"></script>
