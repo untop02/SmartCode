@@ -1,7 +1,8 @@
-"use strict";
 const div = document.getElementsByClassName("chat-container");
+const sendButton = document.getElementById("sendButton");
+const inputField = document.getElementById("uInput");
 function getState() {
-    return JSON.parse(localStorage.getItem("smartCodeState") ?? "") || {};
+    return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
 function setState(newState) {
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
@@ -9,21 +10,30 @@ function setState(newState) {
 //Pitää ehkä säätää vielä koska poistaa
 function initializeState() {
     const currentState = getState();
-    let inputField = document.getElementById("uInput");
     inputField.value = currentState;
 }
 function sendMessage() {
-    let inputText = document.getElementById("uInput").value;
-    vscode.postMessage({ command: "alert", text: inputText });
+    vscode.postMessage({ command: "alert", text: inputField.value });
+    inputField.value = "";
 }
-document.getElementById("sendButton")?.addEventListener("click", () => {
+sendButton?.addEventListener("click", () => {
     sendMessage();
 });
-document.addEventListener("DOMContentLoaded", function () {
+document?.addEventListener("keypress", (event) => {
+    if (event.key === "Enter" && event.shiftKey !== true) {
+        sendMessage();
+    }
+    else if (event.key === "Enter" && event.shiftKey === true) {
+        const inputText = inputField.value;
+        inputText.concat("\n");
+    }
+});
+document.addEventListener("DOMContentLoaded", () => {
     initializeState();
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
-    let inputText = document.getElementById("uInput").value;
+    const inputText = document.getElementById("uInput")
+        .value;
     setState(inputText);
 });
 //# sourceMappingURL=script.js.map
