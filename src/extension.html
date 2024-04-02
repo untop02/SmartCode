@@ -1,36 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-
-    <!--Only used for testing and creation of html-->
-    <!--Copy any changes to extension.ts in src!-->
-
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="/out/style.css">
-        <title>Smart Code</title>
-        <script src="/out/script.js"></script>
-    </head>
-
-    <body>
+`<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" type="text/css" href="${styleUri}">
+            <title>Smart Code</title>
+        </head>
+        <body>
         <script>const vscode = acquireVsCodeApi();
         </script>
-        <header>
-            <img src="../img/Smartcode_logo.jpg"
-                alt="" srcset="" width="200">
-            <p id='p1'>This has some text to show to the user</p>
-        </header>
+            <header>
+                <img src="https://i.imgur.com/kycO1SS.gif"
+                    alt="" srcset="" width="300">
+                <p id='p1'>This is where I will reply</p>
+                <script>
+        const display = document.getElementById('p1');
 
-        <div class="chat-container">
-            <!-- Chat content goes here -->
-        </div>
+        // Handle the message inside the webview
+        window.addEventListener('message', event => {
 
-        <footer>
-            <div class="footer-container">
-                <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
-                <button type="button" id="sendButton">Send Text</button>
+            const message = event.data; // The JSON data our extension sent
+            display.textContent = message.response
+        });
+    </script>
+            </header>
+
+            <div class="chat-container">
+                <!-- Chat content goes here -->
             </div>
-        </footer>
-    </body>
-
-</html>
+            <footer>
+                <div class="footer-container">
+                <div class="input-container">
+                    <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="sendButton">Send</button>
+                </div>
+                </div>
+            </footer>
+            <script src="${scriptUri}"></script>
+        </body>
+        </html>`

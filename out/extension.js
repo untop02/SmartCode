@@ -64,47 +64,48 @@ class SmartCodeProvider {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "script.js"));
         return `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link rel="stylesheet" type="text/css" href="${styleUri}">
-            <title>Smart Code</title>
-        </head>
-        <body>
-        <script>const vscode = acquireVsCodeApi();
-        </script>
-            <header>
-                <img src="https://i.imgur.com/kycO1SS.gif"
-                    alt="" srcset="" width="300">
-                <p id='p1'>This is where I will reply</p>
-                <script>
-        const display = document.getElementById('p1');
-
-        // Handle the message inside the webview
-        window.addEventListener('message', event => {
-
-            const message = event.data; // The JSON data our extension sent
-            display.textContent = message.response
-        });
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="${styleUri}">
+        <title>Smart Code</title>
+    </head>
+    <body>
+    <script>const vscode = acquireVsCodeApi();
     </script>
-            </header>
+        <header>
+            <img src="https://i.imgur.com/kycO1SS.gif"
+                alt="" srcset="" width="300">
+            <p id='p1'>This is where I will reply</p>
+            <script>
+    const display = document.getElementById('p1');
 
-            <div class="chat-container">
-                <!-- Chat content goes here -->
-            </div>
+    // Handle the message inside the webview
+    window.addEventListener('message', event => {
 
-            <footer>
-            <div>
-                        <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+        const message = event.data; // The JSON data our extension sent
+        display.textContent = message.response
+    });
+</script>
+        </header>
+
+        <div class="chat-container">
+            <!-- Chat content goes here -->
+        </div>
+        <footer>
+            <div class="footer-container">
+            <div class="input-container">
+                <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
             </div>
-                <div class="footer-container">
-                    <button type="button" id="sendButton">Send</button>
-                </div>
-            </footer>
-            <script src="${scriptUri}"></script>
-        </body>
-        </html>`;
+            <div class="button-container">
+                <button type="button" id="sendButton">Send</button>
+            </div>
+            </div>
+        </footer>
+        <script src="${scriptUri}"></script>
+    </body>
+    </html>`;
     }
 }
 function deactivate() { }
