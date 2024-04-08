@@ -55,7 +55,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     });
   }
   private openai = new OpenAI({
-    baseURL: "http://boysedating.ddns.net:1234/v1",
+    baseURL: "http://koodikeisarit.ddns.net:1234/v1",
     apiKey: "lm-studio",
   });
   history = [

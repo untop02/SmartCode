@@ -1,3 +1,4 @@
+"use strict";
 const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
 const inputField = document.getElementById("uInput");
