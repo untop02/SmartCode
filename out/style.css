@@ -5,12 +5,14 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: "Times New Roman", Times, serif;
 }
 
 header,
 .chat-container {
   width: 100%;
+  white-space: pre-wrap; /* Preserve whitespace */
+  padding: 10px;
+  border-radius: 5px;
 }
 
 footer {
