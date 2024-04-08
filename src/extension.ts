@@ -25,7 +25,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -53,13 +53,20 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       }
     });
   }
-  private openai = new OpenAI({ baseURL: "http://boysedating.ddns.net:1234/v1", apiKey: "lm-studio" });
+  private openai = new OpenAI({
+    baseURL: "http://boysedating.ddns.net:1234/v1",
+    apiKey: "lm-studio",
+  });
   history = [
-    { "role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful." },
+    {
+      role: "system",
+      content:
+        "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
+    },
   ];
   async api(input: string) {
     if (input !== "") {
-      var usrInput = { "role": "user", "content": input };
+      var usrInput = { role: "user", content: input };
       this.history.push(usrInput);
       const completion = await this.openai.chat.completions.create({
         messages: this.history as ChatCompletionMessageParam[],
@@ -67,7 +74,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         response_format: { type: "json_object" },
         stream: true,
       });
-      var new_message = { "role": "assistant", "content": "" };
+      var new_message = { role: "assistant", content: "" };
       for await (const chunk of completion) {
         if (chunk.choices[0].delta.content) {
           new_message.content += chunk.choices[0].delta.content;
@@ -99,17 +106,28 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     <script>const vscode = acquireVsCodeApi();
     </script>
         <header>
-            <img src="https://i.imgur.com/kycO1SS.gif"
-                alt="" srcset="" width="300">
+          <img src="https://i.imgur.com/kycO1SS.gif"
+            alt="" srcset="" width="300">
+            <div class="button-container">
+              <button id="newChatButton" style="font-size:24px;">+</button>
+            </div>
             <p id='p1'>This is where I will reply</p>
-            <script>
+            <div id="loading" style="display: none;">Loading...</div>
+          <script>
     const display = document.getElementById('p1');
+    const newChatButton = document.getElementById('newChatButton');
 
     // Handle the message inside the webview
     window.addEventListener('message', event => {
 
-        const message = event.data; // The JSON data our extension sent
-        display.textContent = message.response
+      const message = event.data; // The JSON data our extension sent
+      display.textContent = message.response
+    });
+
+    // Handle the new chat button click
+    // Clear the chat
+    newChatButton.addEventListener('click', () => {
+      display.textContent = <p id='p1'>This is where I will reply</p>;
     });
 </script>
         </header>
@@ -133,4 +151,4 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   }
 }
 
-export function deactivate() { }
+export function deactivate() {}
