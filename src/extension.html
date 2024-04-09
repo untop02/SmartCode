@@ -24,6 +24,12 @@
                     const message = event.data; // The JSON data our extension sent
                     display.textContent = message.response;
                 });
+                const clearButton = document.getElementById('clearButton');
+                const chatContainer = document.querySelector('.chat-container pre');
+
+                clearButton.addEventListener('click', () => {
+                chatContainer.textContent = '';
+    });
             </script>
         </header>
         <div class="chat-container">
@@ -31,12 +37,14 @@
         </div>
         <footer>
             <div class="footer-container">
+                <div class="button-container">
+                    <button type="button" id="clearButton">Clear</button>
+                </div>
                 <div class="input-container">
                     <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
                 </div>
                 <div class="button-container">
                     <button type="button" id="sendButton">Send</button>
-                    <button type="button" id="clearButton">New chat</button>                  
                 </div>
             </div>
         </footer>

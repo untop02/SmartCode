@@ -25,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 class SmartCodeProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "smartCode.codeView";
+  private _disposables: vscode.Disposable[] = [];
 
   private _view?: vscode.WebviewView;
 
@@ -90,6 +91,18 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this._view?.webview.postMessage({ response: new_message.content });
         }
       }
+      // Listen for messages from the webview
+      this._view?.webview.onDidReceiveMessage(
+        (message) => {
+          switch (message.command) {
+            case "clearHistory":
+              this.history = [];
+              break;
+          }
+        },
+        undefined,
+        this._disposables
+      );
 
       // Send a message to the webview to hide the loading message
       this._view?.webview.postMessage({ command: "hideLoading" });
