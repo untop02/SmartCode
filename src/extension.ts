@@ -28,7 +28,15 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly _extensionUri: vscode.Uri) { }
+
+  history = [
+    {
+      role: "system",
+      content:
+        "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
+    },
+  ];
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -48,11 +56,22 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage((message) => {
       consoleChannel.append(message);
-      if (message.command === "alert") {
-        this.api(message.text);
-        vscode.window.showInformationMessage(
-          message.text !== "" ? message.text : "No input :("
-        );
+      switch (message.command) {
+        case "alert":
+          this.api(message.text);
+          vscode.window.showInformationMessage(
+            message.text !== "" ? message.text : "No input :("
+          );
+          break;
+        case "clear":
+          this.history = [
+            {
+              role: "system",
+              content:
+                "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
+            },
+          ];
+          break;
       }
     });
   }
@@ -60,13 +79,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     baseURL: "http://koodikeisarit.ddns.net:1234/v1",
     apiKey: getUUID(),
   });
-  history = [
-    {
-      role: "system",
-      content:
-        "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
-    },
-  ];
   async api(input: string) {
     if (input !== "") {
       const usrInput = { role: "user", content: input };
@@ -81,7 +93,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       for await (const chunk of completion) {
         if (chunk.choices[0].delta.content) {
           new_message.content += chunk.choices[0].delta.content;
-          console.log(new_message.content);
           this._view?.webview.postMessage({ response: new_message.content });
         }
       }
@@ -111,7 +122,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   }
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 function getUUID(): string {
   const filePath = `${__dirname}/user.json`;

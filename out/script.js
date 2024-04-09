@@ -1,6 +1,7 @@
 "use strict";
 const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
+const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput");
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
@@ -17,8 +18,15 @@ function sendMessage() {
     vscode.postMessage({ command: "alert", text: inputField.value });
     inputField.value = "";
 }
+function clearHistory() {
+    vscode.postMessage({ command: "clear" });
+    inputField.value = "";
+}
 sendButton?.addEventListener("click", () => {
     sendMessage();
+});
+clearButton?.addEventListener("click", () => {
+    clearHistory();
 });
 document?.addEventListener("keypress", (event) => {
     if (event.key === "Enter" && event.shiftKey !== true) {
