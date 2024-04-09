@@ -11,9 +11,10 @@
     <body>
         <script>const vscode = acquireVsCodeApi();
         </script>
-        <header>
+        <header>        
             <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
             <p id='p1'>This is where I will reply</p>
+            <p id="loading" style="display: none;">Loading...</p>
             <script>
                 const display = document.getElementById('p1');
 
@@ -35,6 +36,7 @@
                 </div>
                 <div class="button-container">
                     <button type="button" id="sendButton">Send</button>
+                    <button type="button" id="clearButton">New chat</button>                  
                 </div>
             </div>
         </footer>

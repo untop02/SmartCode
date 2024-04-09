@@ -69,12 +69,17 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     if (input !== "") {
       const usrInput = { role: "user", content: input };
       this.history.push(usrInput);
+
+      // Send a message to the webview to show the loading message
+      this._view?.webview.postMessage({ command: "showLoading" });
+
       const completion = await this.openai.chat.completions.create({
         messages: this.history as ChatCompletionMessageParam[],
         model: "gpt-3.5-turbo",
         response_format: { type: "json_object" },
         stream: true,
       });
+
       const new_message = { role: "assistant", content: "" };
       for await (const chunk of completion) {
         if (chunk.choices[0].delta.content) {
@@ -83,6 +88,10 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this._view?.webview.postMessage({ response: new_message.content });
         }
       }
+
+      // Send a message to the webview to hide the loading message
+      this._view?.webview.postMessage({ command: "hideLoading" });
+
       this.history.push(new_message);
     }
   }
@@ -109,3 +118,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 }
 
 export function deactivate() {}
+export function clearChatHistory(this: SmartCodeProvider) {
+  this.history = [];
+}

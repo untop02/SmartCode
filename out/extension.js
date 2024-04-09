@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = void 0;
+exports.clearChatHistory = exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const openai_1 = require("openai");
 const fs = require("node:fs");
@@ -50,6 +50,8 @@ class SmartCodeProvider {
         if (input !== "") {
             const usrInput = { role: "user", content: input };
             this.history.push(usrInput);
+            // Send a message to the webview to show the loading message
+            this._view?.webview.postMessage({ command: "showLoading" });
             const completion = await this.openai.chat.completions.create({
                 messages: this.history,
                 model: "gpt-3.5-turbo",
@@ -64,6 +66,8 @@ class SmartCodeProvider {
                     this._view?.webview.postMessage({ response: new_message.content });
                 }
             }
+            // Send a message to the webview to hide the loading message
+            this._view?.webview.postMessage({ command: "hideLoading" });
             this.history.push(new_message);
         }
     }
@@ -80,4 +84,8 @@ class SmartCodeProvider {
 }
 function deactivate() { }
 exports.deactivate = deactivate;
+function clearChatHistory() {
+    this.history = [];
+}
+exports.clearChatHistory = clearChatHistory;
 //# sourceMappingURL=extension.js.map
