@@ -3,6 +3,8 @@ const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput");
+const copyButton = document.getElementById("copyButton");
+let text = document.getElementById("p1");
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
@@ -20,7 +22,6 @@ function sendMessage() {
 }
 function clearHistory() {
     vscode.postMessage({ command: "clear" });
-    inputField.value = "";
 }
 sendButton?.addEventListener("click", () => {
     sendMessage();
@@ -28,6 +29,12 @@ sendButton?.addEventListener("click", () => {
 clearButton?.addEventListener("click", () => {
     clearHistory();
 });
+async function setClipboard(text) {
+    const type = "text/plain";
+    const blob = new Blob([text], { type });
+    const data = [new ClipboardItem({ [type]: blob })];
+    await navigator.clipboard.write(data);
+}
 document?.addEventListener("keypress", (event) => {
     if (event.key === "Enter" && event.shiftKey !== true) {
         sendMessage();
@@ -45,4 +52,5 @@ document.getElementById("uInput")?.addEventListener("change", () => {
         .value;
     setState(inputText);
 });
+copyButton?.addEventListener("click", () => setClipboard(text?.textContent ?? ""));
 //# sourceMappingURL=script.js.map
