@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources";
 import * as fs from "node:fs";
+import uuid4 = require("uuid4");
+
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "Smart Code" is now active!');
 
@@ -56,7 +58,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   }
   private openai = new OpenAI({
     baseURL: "http://koodikeisarit.ddns.net:1234/v1",
-    apiKey: "lm-studio",
+    apiKey: getUUID(),
   });
   history = [
     {
@@ -94,6 +96,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
       this.history.push(new_message);
     }
+    console.log(this.history);
   }
 
   private getWebContent(webview: vscode.Webview): string {
@@ -118,6 +121,24 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 }
 
 export function deactivate() {}
+
+function getUUID(): string {
+  const filePath = `${__dirname}/user.json`;
+
+  let userData: { userID: string };
+
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    userData = JSON.parse(fileContent);
+  } catch (error) {
+    // If file does not exist, create a new UUID
+    const newUUID = uuid4();
+    userData = { userID: newUUID };
+    fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
+  }
+
+  return userData.userID;
+}
 export function clearChatHistory(this: SmartCodeProvider) {
   this.history = [];
 }

@@ -4,6 +4,7 @@ exports.clearChatHistory = exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const openai_1 = require("openai");
 const fs = require("node:fs");
+const uuid4 = require("uuid4");
 function activate(context) {
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
@@ -38,7 +39,7 @@ class SmartCodeProvider {
     }
     openai = new openai_1.default({
         baseURL: "http://koodikeisarit.ddns.net:1234/v1",
-        apiKey: "lm-studio",
+        apiKey: getUUID(),
     });
     history = [
         {
@@ -70,6 +71,7 @@ class SmartCodeProvider {
             this._view?.webview.postMessage({ command: "hideLoading" });
             this.history.push(new_message);
         }
+        console.log(this.history);
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
@@ -84,6 +86,21 @@ class SmartCodeProvider {
 }
 function deactivate() { }
 exports.deactivate = deactivate;
+function getUUID() {
+    const filePath = `${__dirname}/user.json`;
+    let userData;
+    try {
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        userData = JSON.parse(fileContent);
+    }
+    catch (error) {
+        // If file does not exist, create a new UUID
+        const newUUID = uuid4();
+        userData = { userID: newUUID };
+        fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
+    }
+    return userData.userID;
+}
 function clearChatHistory() {
     this.history = [];
 }
