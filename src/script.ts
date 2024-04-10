@@ -5,8 +5,10 @@ interface Vscode {
 declare const vscode: Vscode;
 const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
+const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput") as HTMLInputElement;
-
+const copyButton = document.getElementById("copyButton");
+let text = document.getElementById("p1");
 function getState(): JSON | string {
   return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
@@ -26,9 +28,24 @@ function sendMessage(): void {
   inputField.value = "";
 }
 
+function clearHistory(): void {
+  vscode.postMessage({ command: "clear" });
+}
+
 sendButton?.addEventListener("click", () => {
   sendMessage();
 });
+
+clearButton?.addEventListener("click", () => {
+  clearHistory();
+});
+
+async function setClipboard(text: string): Promise<void> {
+  const type = "text/plain";
+  const blob = new Blob([text], { type });
+  const data: ClipboardItem[] = [new ClipboardItem({ [type]: blob })];
+  await navigator.clipboard.write(data);
+}
 
 document?.addEventListener("keypress", (event) => {
   if (event.key === "Enter" && event.shiftKey !== true) {
@@ -49,3 +66,7 @@ document.getElementById("uInput")?.addEventListener("change", () => {
     .value;
   setState(inputText);
 });
+
+copyButton?.addEventListener("click", () => setClipboard(text?.textContent ?? ""));
+
+

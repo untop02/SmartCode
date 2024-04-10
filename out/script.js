@@ -1,30 +1,40 @@
+"use strict";
+const div = document.getElementsByClassName("chat-container");
+const sendButton = document.getElementById("sendButton");
+const clearButton = document.getElementById("clearButton");
+const inputField = document.getElementById("uInput");
+const copyButton = document.getElementById("copyButton");
+let text = document.getElementById("p1");
+function getState() {
+  return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
+}
 function setState(newState) {
   localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
-
+//Pitää ehkä säätää vielä koska poistaa
 function initializeState() {
   const currentState = getState();
   inputField.value = currentState;
 }
-
 function sendMessage() {
-  let inputText = document.getElementById("uInput").value;
-  document.getElementById("loading").style.display = "block"; // Show loading
-  vscode.postMessage({ command: "alert", text: inputText });
+  vscode.postMessage({ command: "alert", text: inputField.value });
   inputField.value = "";
 }
-
-// New function to handle the response
-window.addEventListener("message", (event) => {
-  document.getElementById("loading").style.display = "none"; // Hide loading
-  const message = event.data; // The JSON data our extension sent
-  display.textContent = message.response;
-});
-
+function clearHistory() {
+  vscode.postMessage({ command: "clear" });
+}
 sendButton?.addEventListener("click", () => {
   sendMessage();
 });
-
+clearButton?.addEventListener("click", () => {
+  clearHistory();
+});
+async function setClipboard(text) {
+  const type = "text/plain";
+  const blob = new Blob([text], { type });
+  const data = [new ClipboardItem({ [type]: blob })];
+  await navigator.clipboard.write(data);
+}
 document?.addEventListener("keypress", (event) => {
   if (event.key === "Enter" && event.shiftKey !== true) {
     sendMessage();
@@ -33,28 +43,14 @@ document?.addEventListener("keypress", (event) => {
     inputText.concat("\n");
   }
 });
-
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();
 });
-
 document.getElementById("uInput")?.addEventListener("change", () => {
   const inputText = document.getElementById("uInput").value;
   setState(inputText);
 });
-
-document.getElementById("clearButton").addEventListener("click", () => {
-  vscode.postMessage({
-    command: "clearChat",
-  });
-});
-
-window.addEventListener("message", (event) => {
-  const message = event.data;
-  switch (message.command) {
-    case "chatCleared":
-      // Clear the chat display
-      display.textContent = "";
-      break;
-  }
-});
+copyButton?.addEventListener("click", () =>
+  setClipboard(text?.textContent ?? "")
+);
+//# sourceMappingURL=script.js.map
