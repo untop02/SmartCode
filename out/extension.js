@@ -22,12 +22,6 @@ class SmartCodeProvider {
     constructor(_extensionUri) {
         this._extensionUri = _extensionUri;
     }
-    history = [
-        {
-            role: "system",
-            content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
-        },
-    ];
     resolveWebviewView(webviewView, context, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
@@ -38,19 +32,21 @@ class SmartCodeProvider {
         webviewView.webview.html = this.getWebContent(webviewView.webview);
         webviewView.webview.onDidReceiveMessage((message) => {
             consoleChannel.append(message);
-            switch (message.command) {
-                case "alert":
-                    this.api(message.text);
+            if (message.command === "alert") {
+                // Start the spinner
+                webviewView.webview.postMessage({ command: "displayLoading" });
+                this.api(message.text)
+                    .then((response) => {
+                    // Stop the spinner
+                    webviewView.webview.postMessage({ command: "hideLoading" });
                     vscode.window.showInformationMessage(message.text !== "" ? message.text : "No input :(");
-                    break;
-                case "clear":
-                    this.history = [
-                        {
-                            role: "system",
-                            content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
-                        },
-                    ];
-                    break;
+                })
+                    .catch((error) => {
+                    // Stop the spinner
+                    webviewView.webview.postMessage({ command: "hideLoading" });
+                    // Handle the error
+                    console.error("Error:", error);
+                });
             }
         });
     }
@@ -58,6 +54,12 @@ class SmartCodeProvider {
         baseURL: "http://koodikeisarit.ddns.net:1234/v1",
         apiKey: getUUID(),
     });
+    history = [
+        {
+            role: "system",
+            content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
+        },
+    ];
     async api(input) {
         if (input !== "") {
             const usrInput = { role: "user", content: input };
@@ -74,6 +76,7 @@ class SmartCodeProvider {
             for await (const chunk of completion) {
                 if (chunk.choices[0].delta.content) {
                     new_message.content += chunk.choices[0].delta.content;
+                    console.log(new_message.content);
                     this._view?.webview.postMessage({ response: new_message.content });
                 }
             }
