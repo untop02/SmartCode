@@ -1,46 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="${styleUri}">
-    <title>Smart Code</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="${styleUri}">
+        <title>Smart Code</title>
+    </head>
 
-<body>
-    <script>const vscode = acquireVsCodeApi();
-    </script>
-    <header>
-        <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
-        <p id='p1'>This is where I will reply</p>
-        <script>
-            const display = document.getElementById('p1');
-
-            // Handle the message inside the webview
-            window.addEventListener('message', event => {
-
-                const message = event.data; // The JSON data our extension sent
-                display.textContent = message.response;
-            });
+    <body>
+        <script>const vscode = acquireVsCodeApi();
         </script>
-    </header>
-    <div class="chat-container">
-        <pre><!-- Chat content goes here --></pre>
-    </div>
-    <footer>
-        <div class="footer-container">
-            <div class="input-container">
-                <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
-            </div>
-            <div class="button-container">
-                <button type="button" id="sendButton">Send</button>
-                <button type="button" id="clearButton">Reset</button>
-                <button type="button" id="copyButton">Copy</button>
-            </div>
+        <header>
+            <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
+            <p id='p1'>This is where I will reply</p>
+            <script>
+                const display = document.getElementById('p1');
+
+                // Handle the message inside the webview
+                window.addEventListener('message', event => {
+
+                    const message = event.data; // The JSON data our extension sent
+                    display.textContent = message.response;
+                });
+            </script>
+        </header>
+        <div class="chat-container">
+            <pre><!-- Chat content goes here --></pre>
         </div>
-    </footer>
-    <script src="${scriptUri}"></script>
-</body>
+        <footer>
+            <div class="footer-container">
+                <div class="input-container">
+                    <textarea type="text" id="uInput" placeholder="Ask SmartCode..."></textarea>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="sendButton">Send</button>
+                    <button type="button" id="clearButton">Reset</button>
+                    <button type="button" id="copyButton">Copy</button>
+                </div>
+            </div>
+        </footer>
+        <script src="${scriptUri}"></script>
+    </body>
 
 </html>

@@ -4,14 +4,13 @@ const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput");
 const copyButton = document.getElementById("copyButton");
-let text = document.getElementById("p1");
+const text = document.getElementById("p1");
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
 function setState(newState) {
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
-//Pitää ehkä säätää vielä koska poistaa
 function initializeState() {
     const currentState = getState();
     inputField.value = currentState;

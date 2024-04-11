@@ -68,43 +68,34 @@ div {
   text-align: center;
 }
 
+button {
+  border-radius: 4px;
+  border-style: none;
+  color: #ffffff;
+  font-weight: 500;
+  height: 40px;
+  line-height: 20px;
+  padding: 10px 16px;
+  text-align: center;
+  width: 25%;
+  min-width: 75px;
+}
+
 #sendButton {
   background-color: #f37b31;
-  border-radius: 4px;
-  border-style: none;
-  color: #FFFFFF;
-  font-weight: 500;
-  height: 40px;
-  line-height: 20px;
-  padding: 10px 16px;
-  text-align: center;
-  width: 25%;
 }
+
 #clearButton {
   background-color: #d331f3;
-  border-radius: 4px;
-  border-style: none;
-  color: #FFFFFF;
-  font-weight: 500;
-  height: 40px;
-  line-height: 20px;
-  padding: 10px 16px;
-  text-align: center;
-  width: 25%;
+  margin-left: 5px;
+  margin-right: 5px;
 }
+
 #copyButton {
-  background-color: #4E3B31;
-  border-radius: 4px;
-  border-style: none;
-  color: #FFFFFF;
-  font-weight: 500;
-  height: 40px;
-  line-height: 20px;
-  padding: 10px 16px;
-  text-align: center;
-  width: 25%;
+  background-color: #4e3b31;
 }
-#uInput{
+
+#uInput {
   background-color: #252525;
   border-radius: 4px;
   border-style: solid;

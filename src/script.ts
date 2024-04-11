@@ -8,7 +8,7 @@ const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput") as HTMLInputElement;
 const copyButton = document.getElementById("copyButton");
-let text = document.getElementById("p1");
+const text = document.getElementById("p1");
 function getState(): JSON | string {
   return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
@@ -17,7 +17,6 @@ function setState(newState: string): void {
   localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
 
-//Pitää ehkä säätää vielä koska poistaa
 function initializeState(): void {
   const currentState = getState();
   inputField.value = currentState as string;
@@ -67,6 +66,6 @@ document.getElementById("uInput")?.addEventListener("change", () => {
   setState(inputText);
 });
 
-copyButton?.addEventListener("click", () => setClipboard(text?.textContent ?? ""));
-
-
+copyButton?.addEventListener("click", () =>
+  setClipboard(text?.textContent ?? "")
+);

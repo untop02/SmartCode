@@ -28,7 +28,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   history = [
     {
@@ -96,9 +96,10 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this._view?.webview.postMessage({ response: new_message.content });
         }
       }
+      updateHistory(usrInput.content, new_message.content);
       this.history.push(new_message);
     }
-    console.log(this.history);
+    console.log("This is history", this.history);
   }
 
   private getWebContent(webview: vscode.Webview): string {
@@ -121,23 +122,57 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     return htmlContent;
   }
 }
-
-export function deactivate() { }
+export function deactivate() {}
 
 function getUUID(): string {
   const filePath = `${__dirname}/user.json`;
-
-  let userData: { userID: string };
-
+  let userData: UserData;
   try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
     userData = JSON.parse(fileContent);
   } catch (error) {
-    // If file does not exist, create a new UUID
     const newUUID = uuid4();
-    userData = { userID: newUUID };
+    userData = { userID: newUUID, searchHistory: {} };
     fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
   }
-
   return userData.userID;
+}
+
+function updateHistory(usrInput: string, new_message: string) {
+  const filePath = `${__dirname}/user.json`;
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading file:", err);
+      return;
+    }
+
+    let currentData: UserData;
+
+    try {
+      currentData = JSON.parse(data);
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return;
+    }
+
+    // Update history
+    const history: Array<string> = currentData.searchHistory.questions ?? [];
+    history.push(usrInput);
+    history.push(new_message);
+    console.log("Current histroy: ", history);
+
+    console.log("Current data: ", currentData.searchHistory);
+
+    // Write the updated data back to the file
+    fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
+
+    // Log the updated file contents
+    console.log(fs.readFileSync(filePath, "utf-8"));
+  });
+}
+
+interface UserData {
+  userID: string;
+  searchHistory: { primaryQuestion?: string; questions?: Array<string> };
 }
