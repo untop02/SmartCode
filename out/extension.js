@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activate = void 0;
+exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const openai_1 = require("openai");
 const fs = require("node:fs");
+const uuid4 = require("uuid4");
 function activate(context) {
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
@@ -89,6 +90,22 @@ class SmartCodeProvider {
         return htmlContent;
     }
 }
+function deactivate() { }
+exports.deactivate = deactivate;
+function getUUID() {
+    const filePath = `${__dirname}/user.json`;
+    let userData;
+    try {
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        userData = JSON.parse(fileContent);
+    }
+    catch (error) {
+        const newUUID = uuid4();
+        userData = { userID: newUUID, searchHistory: {} };
+        fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
+    }
+    return userData.userID;
+}
 function updateHistory(usrInput, new_message) {
     const filePath = `${__dirname}/user.json`;
     fs.readFile(filePath, "utf8", (err, data) => {
@@ -96,11 +113,7 @@ function updateHistory(usrInput, new_message) {
             console.error("Error reading file:", err);
             return;
         }
-        let currentData = {
-            searchHistory: {
-                questions: [],
-            },
-        };
+        let currentData;
         try {
             currentData = JSON.parse(data);
         }
@@ -112,16 +125,10 @@ function updateHistory(usrInput, new_message) {
         const history = currentData.searchHistory.questions ?? [];
         history.push(usrInput);
         history.push(new_message);
-        // Update search history in current data
-        currentData.searchHistory.questions = history;
+        console.log("Current histroy: ", history);
+        console.log("Current data: ", currentData.searchHistory);
         // Write the updated data back to the file
-        fs.writeFile(filePath, JSON.stringify(currentData), { flag: "w" }, (writeErr) => {
-            if (writeErr) {
-                console.error("Error writing file:", writeErr);
-                return;
-            }
-            console.log("History updated successfully.");
-        });
+        fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
         // Log the updated file contents
         console.log(fs.readFileSync(filePath, "utf-8"));
     });
