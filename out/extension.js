@@ -101,7 +101,7 @@ function getUUID() {
     }
     catch (error) {
         const newUUID = uuid4();
-        userData = { userID: newUUID, searchHistory: {} };
+        userData = { userID: newUUID, searchHistory: [] };
         fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
     }
     return userData.userID;
@@ -122,10 +122,7 @@ function updateHistory(usrInput, new_message) {
             return;
         }
         // Update history
-        const history = currentData.searchHistory.questions ?? [];
-        history.push(usrInput);
-        history.push(new_message);
-        console.log("Current histroy: ", history);
+        currentData.searchHistory.push(usrInput, new_message);
         console.log("Current data: ", currentData.searchHistory);
         // Write the updated data back to the file
         fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });

@@ -132,7 +132,7 @@ function getUUID(): string {
     userData = JSON.parse(fileContent);
   } catch (error) {
     const newUUID = uuid4();
-    userData = { userID: newUUID, searchHistory: {} };
+    userData = { userID: newUUID, searchHistory: [] };
     fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
   }
   return userData.userID;
@@ -157,11 +157,7 @@ function updateHistory(usrInput: string, new_message: string) {
     }
 
     // Update history
-    const history: Array<string> = currentData.searchHistory.questions ?? [];
-    history.push(usrInput);
-    history.push(new_message);
-    console.log("Current histroy: ", history);
-
+    currentData.searchHistory.push(usrInput,new_message)
     console.log("Current data: ", currentData.searchHistory);
 
     // Write the updated data back to the file
@@ -174,5 +170,9 @@ function updateHistory(usrInput: string, new_message: string) {
 
 interface UserData {
   userID: string;
-  searchHistory: { primaryQuestion?: string; questions?: Array<string> };
+  searchHistory: Array<string>;
+}
+interface Conversation {
+  primaryQuestion: string;
+  questions: Array<string>;
 }
