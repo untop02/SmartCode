@@ -27,7 +27,7 @@ class SmartCodeProvider {
             content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
         },
     ];
-    resolveWebviewView(webviewView, context, _token) {
+    resolveWebviewView(webviewView, _context, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
             enableScripts: true,
