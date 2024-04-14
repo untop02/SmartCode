@@ -21,12 +21,14 @@ class SmartCodeProvider {
     constructor(_extensionUri) {
         this._extensionUri = _extensionUri;
     }
+    system_message = {
+        role: "system",
+        content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
+    };
     history = [
-        {
-            role: "system",
-            content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
-        },
+        this.system_message,
     ];
+    ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
     resolveWebviewView(webviewView, context, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
@@ -40,41 +42,49 @@ class SmartCodeProvider {
             switch (message.command) {
                 case "alert":
                     this.api(message.text);
-                    vscode.window.showInformationMessage(message.text !== "" ? message.text : "No input :(");
+                    vscode.window.showInformationMessage(message.text !== "" ? "Sending: " + message.text : "No input :(");
                     break;
-                case "clear":
+                case "clear": //emptys chat context for ai api
                     this.history = [
-                        {
-                            role: "system",
-                            content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
-                        },
+                        this.system_message
                     ];
                     break;
             }
         });
     }
     openai = new openai_1.default({
-        baseURL: "http://koodikeisarit.ddns.net:1234/v1",
+        baseURL: this.ai_url,
         apiKey: getUUID(),
     });
+    prevInput = "";
     async api(input) {
-        if (input !== "") {
-            const usrInput = { role: "user", content: input };
-            this.history.push(usrInput);
+        if (input !== "" && input !== this.prevInput) {
+            this.prevInput = input; //saves input for check to prevent spam
+            const usrInput = { role: "user", content: input }; //input into user object
+            this.history.push(usrInput); //adds user object to history array
             const completion = await this.openai.chat.completions.create({
-                messages: this.history,
+                messages: this.history, //sends history array for ai to interpret
                 model: "gpt-3.5-turbo",
                 response_format: { type: "json_object" },
                 stream: true,
             });
-            const new_message = { role: "assistant", content: "" };
-            for await (const chunk of completion) {
+            const new_message = { role: "assistant", content: "" }; //ai response object
+            for await (const chunk of completion) { //gets reply from ai of user prompt
                 if (chunk.choices[0].delta.content) {
                     new_message.content += chunk.choices[0].delta.content;
-                    this._view?.webview.postMessage({ response: new_message.content });
+                    this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
                 }
             }
-            this.history.push(new_message);
+            this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
+            if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
+                this.history.shift(); //removes system prompt
+                this.history.shift(); //removes old prompts and replys from array
+                this.history.shift();
+                this.history.unshift(this.system_message); //inserts system prompt to start of array
+            }
+        }
+        else {
+            vscode.window.showInformationMessage("Invalid input, please try again");
         }
         console.log(this.history);
     }
