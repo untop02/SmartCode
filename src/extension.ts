@@ -82,8 +82,8 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   async api(input: string) {
     if (input !== "" && input !== this.prevInput) {
       this.prevInput = input; //saves input for check to prevent spam
-      const usrInput = { role: "user", content: input }; //input into user object
-      this.history.push(usrInput); //adds user object to history array
+      const usrInput = { role: "user", content: input };
+      this.history.push(usrInput);//model reads first user role content starting from end of array
       const completion = await this.openai.chat.completions.create({
         messages: this.history as ChatCompletionMessageParam[], //sends history array for ai to interpret
         model: "gpt-3.5-turbo",
