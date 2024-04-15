@@ -20,27 +20,28 @@
                 // Handle the message inside the webview
                 window.addEventListener('message', event => {
 
-                    const message = event.data; // The JSON data our extension sent
-                    display.textContent = message.response;
-                });
-            </script>
-        </header>
-        <div class="chat-container">
-            <pre><!-- Chat content goes here --></pre>
-        </div>
-        <footer>
-            <div class="footer-container">
-                <div class="input-container">
-                    <textarea type="text" id="uInput" placeholder="Ask SmartCode..."></textarea>
-                </div>
-                <div class="button-container">
-                    <button type="button" id="sendButton">Send</button>
-                    <button type="button" id="clearButton">Reset</button>
-                    <button type="button" id="copyButton">Copy</button>
-                </div>
+                const message = event.data; // The JSON data our extension sent
+                display.textContent = message.response;
+            });
+        </script>
+    </header>
+    <div class="chat-container">
+        <pre><!-- Chat content goes here --></pre>
+    </div>
+    <footer>
+        <div class="footer-container">
+            <div id="loadingSpinner" class="loader"></div>
+            <div class="input-container">
+                <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
             </div>
-        </footer>
-        <script src="${scriptUri}"></script>
-    </body>
+            <div class="button-container">
+                <button type="button" id="sendButton">Send</button>
+                <button type="button" id="clearButton">Reset</button>
+                <button type="button" id="copyButton">Copy</button>
+            </div>
+        </div>
+    </footer>
+    <script src="${scriptUri}"></script>
+</body>
 
 </html>
