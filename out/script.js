@@ -29,6 +29,7 @@ sendButton?.addEventListener("click", () => {
 clearButton?.addEventListener("click", () => {
     clearHistory();
 });
+//function for copying text to clipboard
 async function setClipboard(text) {
     const type = "text/plain";
     const blob = new Blob([text], { type });

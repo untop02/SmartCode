@@ -40,6 +40,7 @@ clearButton?.addEventListener("click", () => {
   clearHistory();
 });
 
+//function for copying text to clipboard
 async function setClipboard(text: string): Promise<void> {
   const type = "text/plain";
   const blob = new Blob([text], { type });
