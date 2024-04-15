@@ -42,7 +42,7 @@ class SmartCodeProvider {
             switch (message.command) {
                 case "alert":
                     this.api(message.text);
-                    vscode.window.showInformationMessage(message.text !== "" ? "Sending: " + message.text : "No input :(");
+                    vscode.window.showInformationMessage(message.text !== "" ? `Sending: ${message.text}` : "No input :(");
                     break;
                 case "clear": //emptys chat context for ai api
                     this.history = [
@@ -77,6 +77,7 @@ class SmartCodeProvider {
                         this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
                     }
                 }
+                updateHistory(usrInput.content, new_message.content);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
                 if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
@@ -93,7 +94,7 @@ class SmartCodeProvider {
         else {
             vscode.window.showInformationMessage("Invalid input, please try again");
         }
-        console.log(this.history);
+        console.log("This is history", this.history);
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
