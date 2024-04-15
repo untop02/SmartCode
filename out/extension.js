@@ -62,25 +62,32 @@ class SmartCodeProvider {
             this.prevInput = input; //saves input for check to prevent spam
             const usrInput = { role: "user", content: input };
             this.history.push(usrInput); //model reads first user role content starting from end of array
-            const completion = await this.openai.chat.completions.create({
-                messages: this.history, //sends history array for ai to interpret
-                model: "gpt-3.5-turbo",
-                response_format: { type: "json_object" },
-                stream: true,
-            });
-            const new_message = { role: "assistant", content: "" }; //ai response object
-            for await (const chunk of completion) { //gets reply from ai of user prompt
-                if (chunk.choices[0].delta.content) {
-                    new_message.content += chunk.choices[0].delta.content;
-                    this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
+            try {
+                this._view?.webview.postMessage({ response: "Processing response..." });
+                const completion = await this.openai.chat.completions.create({
+                    messages: this.history, //sends history array for ai to interpret
+                    model: "gpt-3.5-turbo",
+                    response_format: { type: "json_object" },
+                    stream: true,
+                });
+                const new_message = { role: "assistant", content: "" }; //ai response object
+                for await (const chunk of completion) { //gets reply from ai of user prompt
+                    if (chunk.choices[0].delta.content) {
+                        new_message.content += chunk.choices[0].delta.content;
+                        this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
+                    }
+                }
+                this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
+                if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
+                    this.history.shift(); //removes system prompt
+                    this.history.shift(); //removes old prompts and replys from array
+                    this.history.shift();
+                    this.history.unshift(this.system_message); //inserts system prompt to start of array
                 }
             }
-            this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-            if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
-                this.history.shift(); //removes system prompt
-                this.history.shift(); //removes old prompts and replys from array
-                this.history.shift();
-                this.history.unshift(this.system_message); //inserts system prompt to start of array
+            catch (error) {
+                console.log(error);
+                vscode.window.showInformationMessage("Failed to connect");
             }
         }
         else {
