@@ -82,6 +82,7 @@ class SmartCodeProvider {
                     }
                 }
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
+                this._view?.webview.postMessage({ command: "hideSpinner" });
                 this._view?.webview.postMessage({
                     response: { info: "complete", text: this.history },
                 });
