@@ -63,7 +63,7 @@ class SmartCodeProvider {
             const usrInput = { role: "user", content: input };
             this.history.push(usrInput); //model reads first user role content starting from end of array
             try {
-                this._view?.webview.postMessage({ response: "Processing response..." });
+                this._view?.webview.postMessage({ response: { info: "stream", text: "Processing response..." } });
                 const completion = await this.openai.chat.completions.create({
                     messages: this.history, //sends history array for ai to interpret
                     model: "gpt-3.5-turbo",
@@ -74,10 +74,11 @@ class SmartCodeProvider {
                 for await (const chunk of completion) { //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
-                        this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
+                        this._view?.webview.postMessage({ response: { info: "stream", text: new_message.content } }); //streams reply to html
                     }
                 }
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
+                this._view?.webview.postMessage({ response: { info: "complete", text: this.history } });
                 if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
                     this.history.shift(); //removes old prompts and replys from array
