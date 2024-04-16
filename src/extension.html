@@ -19,10 +19,21 @@
         </div>
         <script>
             const display = document.getElementById('p1');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
             const prev = document.getElementById('p2');
             // Handle the message inside the webview
             window.addEventListener('message', event => {
                 const message = event.data; // The JSON data our extension sent
+                switch (message.command) {
+                    case 'showSpinner':
+                        document.getElementById('loadingSpinner').style.display = 'block';
+                        break;
+                    case 'hideSpinner':
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                        break;
+                }
+                display.textContent = message.response;
                 switch (message.response.info) {
                     case "stream":
                         display.textContent = message.response.text;

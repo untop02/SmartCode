@@ -22,12 +22,11 @@ class SmartCodeProvider {
         this._extensionUri = _extensionUri;
     }
     system_message = {
+        //how how the language model acts
         role: "system",
         content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
     };
-    history = [
-        this.system_message,
-    ];
+    history = [this.system_message];
     ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
     resolveWebviewView(webviewView, context, _token) {
         this._view = webviewView;
@@ -45,14 +44,13 @@ class SmartCodeProvider {
                     vscode.window.showInformationMessage(message.text !== "" ? "Sending: " + message.text : "No input :(");
                     break;
                 case "clear": //emptys chat context for ai api
-                    this.history = [
-                        this.system_message
-                    ];
+                    this.history = [this.system_message];
                     break;
             }
         });
     }
     openai = new openai_1.default({
+        //using openAi library to handle communication
         baseURL: this.ai_url,
         apiKey: getUUID(),
     });
@@ -64,6 +62,8 @@ class SmartCodeProvider {
             this.history.push(usrInput); //model reads first user role content starting from end of array
             try {
                 this._view?.webview.postMessage({ response: { info: "stream", text: "Processing response..." } });
+                this._view?.webview.postMessage({ response: "Processing response..." });
+                this._view?.webview.postMessage({ command: "showSpinner" });
                 const completion = await this.openai.chat.completions.create({
                     messages: this.history, //sends history array for ai to interpret
                     model: "gpt-3.5-turbo",
@@ -71,15 +71,19 @@ class SmartCodeProvider {
                     stream: true,
                 });
                 const new_message = { role: "assistant", content: "" }; //ai response object
-                for await (const chunk of completion) { //gets reply from ai of user prompt
+                for await (const chunk of completion) {
+                    //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
                         this._view?.webview.postMessage({ response: { info: "stream", text: new_message.content } }); //streams reply to html
                     }
                 }
+                this._view?.webview.postMessage({ command: "hideSpinner" });
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
                 this._view?.webview.postMessage({ response: { info: "complete", text: this.history } });
                 if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
+                if (this.history.length > 11) {
+                    //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
                     this.history.shift(); //removes old prompts and replys from array
                     this.history.shift();

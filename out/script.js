@@ -4,7 +4,6 @@ const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput");
 const copyButton = document.getElementById("copyButton");
-const loadingSpinner = document.getElementById("loadingSpinner");
 let text = document.getElementById("p1");
 function getState() {
   return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
@@ -18,6 +17,8 @@ function initializeState() {
   inputField.value = currentState;
 }
 function sendMessage() {
+  vscode.postMessage({ command: "alert", text: inputField.value });
+  inputField.value = "";
   vscode.postMessage({ command: "alert", text: inputField.value });
   inputField.value = "";
 }
@@ -45,6 +46,7 @@ document?.addEventListener("keypress", (event) => {
   }
 });
 document.addEventListener("DOMContentLoaded", () => {
+  initializeState();
   initializeState();
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
