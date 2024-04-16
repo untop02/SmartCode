@@ -23,10 +23,10 @@
                 const message = event.data; // The JSON data our extension sent
                 switch (message.command) {
                     case 'showSpinner':
-                        document.getElementById('spinner').style.display = 'block';
+                        document.getElementById('loadingSpinner').style.display = 'block';
                         break;
                     case 'hideSpinner':
-                        document.getElementById('spinner').style.display = 'none';
+                        document.getElementById('loadingSpinner').style.display = 'none';
                         break;
                 }
                 display.textContent = message.response;

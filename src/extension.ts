@@ -82,10 +82,8 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       const usrInput = { role: "user", content: input };
       this.history.push(usrInput); //model reads first user role content starting from end of array
       try {
-        this._view?.webview.postMessage({
-          response: "Processing response...",
-          command: "showspinner",
-        });
+        this._view?.webview.postMessage({ response: "Processing response..." });
+        this._view?.webview.postMessage({ command: "showSpinner" });
         const completion = await this.openai.chat.completions.create({
           messages: this.history as ChatCompletionMessageParam[], //sends history array for ai to interpret
           model: "gpt-3.5-turbo",
@@ -100,7 +98,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
           }
         }
-        this._view?.webview.postMessage({ command: "hidespinner" });
+        this._view?.webview.postMessage({ command: "hideSpinner" });
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
         if (this.history.length > 11) {
           //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
