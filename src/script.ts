@@ -51,7 +51,7 @@ document?.addEventListener("keypress", (event) => {
     sendMessage();
   } else if (event.key === "Enter" && event.shiftKey === true) {
     const inputText = inputField.value;
-
+    
     inputText.concat("\n");
   }
 });

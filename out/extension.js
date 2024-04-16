@@ -48,6 +48,7 @@ class SmartCodeProvider {
                     this.history = [
                         this.system_message
                     ];
+                    newConversation();
                     break;
             }
         });
@@ -112,18 +113,21 @@ exports.deactivate = deactivate;
 function getUUID() {
     const filePath = `${__dirname}/user.json`;
     let userData;
+    const conversation = {
+        messages: []
+    };
     try {
         const fileContent = fs.readFileSync(filePath, "utf-8");
         userData = JSON.parse(fileContent);
     }
     catch (error) {
         const newUUID = uuid4();
-        userData = { userID: newUUID, searchHistory: [] };
+        userData = { userID: newUUID, searchHistory: [conversation] };
         fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
     }
     return userData.userID;
 }
-function updateHistory(usrInput, new_message) {
+function updateHistory(usrInput, answer) {
     const filePath = `${__dirname}/user.json`;
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
@@ -138,13 +142,41 @@ function updateHistory(usrInput, new_message) {
             console.error("Error parsing JSON:", parseError);
             return;
         }
+        const latestConversation = currentData.searchHistory[currentData.searchHistory.length - 1];
+        console.log(latestConversation);
+        const conversation = {
+            messages: latestConversation.messages
+        };
         // Update history
-        currentData.searchHistory.push(usrInput, new_message);
+        conversation.messages.push(usrInput, answer);
         console.log("Current data: ", currentData.searchHistory);
+        currentData.searchHistory[currentData.searchHistory.length - 1] = conversation;
         // Write the updated data back to the file
         fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
         // Log the updated file contents
         console.log(fs.readFileSync(filePath, "utf-8"));
+    });
+}
+function newConversation() {
+    const filePath = `${__dirname}/user.json`;
+    const newConversation = {
+        messages: []
+    };
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading file:", err);
+            return;
+        }
+        let currentData;
+        try {
+            currentData = JSON.parse(data);
+        }
+        catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return;
+        }
+        currentData.searchHistory.push(newConversation);
+        fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
     });
 }
 //# sourceMappingURL=extension.js.map

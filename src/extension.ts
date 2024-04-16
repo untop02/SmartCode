@@ -70,6 +70,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this.history = [
             this.system_message
           ];
+          newConversation();
           break;
       }
     });
@@ -147,18 +148,21 @@ export function deactivate() {}
 function getUUID(): string {
   const filePath = `${__dirname}/user.json`;
   let userData: UserData;
-  try {
+  const conversation: Conversation = {
+    messages: []
+  };
+    try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
     userData = JSON.parse(fileContent);
   } catch (error) {
     const newUUID = uuid4();
-    userData = { userID: newUUID, searchHistory: [] };
+    userData = { userID: newUUID, searchHistory: [conversation] };
     fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
   }
-  return userData.userID;
+  return userData.userID; 
 }
 
-function updateHistory(usrInput: string, new_message: string) {
+function updateHistory(usrInput: string, answer: string) {
   const filePath = `${__dirname}/user.json`;
 
   fs.readFile(filePath, "utf8", (err, data) => {
@@ -175,11 +179,17 @@ function updateHistory(usrInput: string, new_message: string) {
       console.error("Error parsing JSON:", parseError);
       return;
     }
+    const latestConversation = currentData.searchHistory[currentData.searchHistory.length -1];
+    console.log(latestConversation);
+    
+    const conversation: Conversation = {
+      messages: latestConversation.messages
+    };
 
     // Update history
-    currentData.searchHistory.push(usrInput,new_message)
+    conversation.messages.push(usrInput,answer);
     console.log("Current data: ", currentData.searchHistory);
-
+    currentData.searchHistory[currentData.searchHistory.length -1] = conversation;
     // Write the updated data back to the file
     fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
 
@@ -187,12 +197,36 @@ function updateHistory(usrInput: string, new_message: string) {
     console.log(fs.readFileSync(filePath, "utf-8"));
   });
 }
+function newConversation() {
+  const filePath = `${__dirname}/user.json`;
+  const newConversation: Conversation = {
+    messages: []
+  };
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading file:", err);
+      return;
+    }
+
+    let currentData: UserData;
+
+    try {
+      currentData = JSON.parse(data);
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return;
+    }
+    currentData.searchHistory.push(newConversation);
+    fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
+  });
+}
 
 interface UserData {
   userID: string;
-  searchHistory: Array<string>;
+  searchHistory: Array<Conversation>;
 }
 interface Conversation {
   primaryQuestion?: string;
-  questions: Array<string>;
+  messages: Array<string>;
 }
