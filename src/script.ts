@@ -48,10 +48,11 @@ async function setClipboard(text: string): Promise<void> {
 
 document?.addEventListener("keypress", (event) => {
   if (event.key === "Enter" && event.shiftKey !== true) {
+    event.preventDefault();
     sendMessage();
   } else if (event.key === "Enter" && event.shiftKey === true) {
     const inputText = inputField.value;
-    
+
     inputText.concat("\n");
   }
 });

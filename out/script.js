@@ -36,6 +36,7 @@ async function setClipboard(text) {
 }
 document?.addEventListener("keypress", (event) => {
     if (event.key === "Enter" && event.shiftKey !== true) {
+        event.preventDefault();
         sendMessage();
     }
     else if (event.key === "Enter" && event.shiftKey === true) {

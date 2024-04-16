@@ -41,7 +41,11 @@ class SmartCodeProvider {
             switch (message.command) {
                 case "alert":
                     this.api(message.text);
-                    vscode.window.showInformationMessage(message.text !== "" ? `Sending: ${message.text}` : "No input :(");
+                    if (message.text &&
+                        message.text.length > 0 &&
+                        message.text.trim().length > 0) {
+                        vscode.window.showInformationMessage(`Sending: ${message.text}`);
+                    }
                     break;
                 case "clear": //emptys chat context for ai api
                     this.history = [this.system_message];
