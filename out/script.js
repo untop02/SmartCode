@@ -16,11 +16,9 @@ function setState(newState) {
 function initializeState() {
   const currentState = getState();
   inputField.value = currentState;
-  loadingSpinner.style.display = "none";
 }
 function sendMessage() {
   vscode.postMessage({ command: "alert", text: inputField.value });
-  loadingSpinner.style.display = "block";
   inputField.value = "";
 }
 function clearHistory() {
@@ -37,7 +35,6 @@ async function setClipboard(text) {
   const blob = new Blob([text], { type });
   const data = [new ClipboardItem({ [type]: blob })];
   await navigator.clipboard.write(data);
-  loadingSpinner.style.display = "block";
 }
 document?.addEventListener("keypress", (event) => {
   if (event.key === "Enter" && event.shiftKey !== true) {
@@ -49,7 +46,6 @@ document?.addEventListener("keypress", (event) => {
 });
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();
-  loadingSpinner.style.display = "none";
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
   const inputText = document.getElementById("uInput").value;
