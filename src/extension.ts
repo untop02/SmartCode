@@ -184,19 +184,24 @@ function updateHistory(usrInput: string, answer: string): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
-    const latestConversation = currentData.searchHistory[currentData.searchHistory.length - 1];
+    const latestConversation =
+      currentData.searchHistory[currentData.searchHistory.length - 1];
 
     if (!latestConversation) {
       console.error("No conversation found in search history.");
       return;
     }
 
-    const messages: string[] = [...latestConversation.messages, usrInput, answer];
+    const messages: string[] = [
+      ...latestConversation.messages,
+      usrInput,
+      answer,
+    ];
 
-    currentData.searchHistory[currentData.searchHistory.length - 1] = { messages };
+    currentData.searchHistory[currentData.searchHistory.length - 1] = {
+      messages,
+    };
   });
-}
-
 }
 
 function newConversation(): void {
