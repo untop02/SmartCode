@@ -16,11 +16,19 @@
         <p id='p1'>This is where I will reply</p>
         <script>
             const display = document.getElementById('p1');
+            const loadingSpinner = document.getElementById('loadingSpinner');
 
             // Handle the message inside the webview
             window.addEventListener('message', event => {
-
                 const message = event.data; // The JSON data our extension sent
+                switch (message.command) {
+                    case 'showSpinner':
+                        document.getElementById('spinner').style.display = 'block';
+                        break;
+                    case 'hideSpinner':
+                        document.getElementById('spinner').style.display = 'none';
+                        break;
+                }
                 display.textContent = message.response;
             });
         </script>
