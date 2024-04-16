@@ -22,12 +22,11 @@ class SmartCodeProvider {
         this._extensionUri = _extensionUri;
     }
     system_message = {
+        //how how the language model acts
         role: "system",
         content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
     };
-    history = [
-        this.system_message,
-    ];
+    history = [this.system_message];
     ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
     resolveWebviewView(webviewView, _context, _token) {
         this._view = webviewView;
@@ -45,15 +44,14 @@ class SmartCodeProvider {
                     vscode.window.showInformationMessage(message.text !== "" ? `Sending: ${message.text}` : "No input :(");
                     break;
                 case "clear": //emptys chat context for ai api
-                    this.history = [
-                        this.system_message
-                    ];
+                    this.history = [this.system_message];
                     newConversation();
                     break;
             }
         });
     }
     openai = new openai_1.default({
+        //using openAi library to handle communication
         baseURL: this.ai_url,
         apiKey: getUUID(),
     });
@@ -72,7 +70,8 @@ class SmartCodeProvider {
                     stream: true,
                 });
                 const new_message = { role: "assistant", content: "" }; //ai response object
-                for await (const chunk of completion) { //gets reply from ai of user prompt
+                for await (const chunk of completion) {
+                    //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
                         this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
@@ -80,7 +79,8 @@ class SmartCodeProvider {
                 }
                 updateHistory(usrInput.content, new_message.content);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
+                if (this.history.length > 11) {
+                    //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
                     this.history.shift(); //removes old prompts and replys from array
                     this.history.shift();
@@ -114,7 +114,7 @@ function getUUID() {
     const filePath = `${__dirname}/user.json`;
     let userData;
     const conversation = {
-        messages: []
+        messages: [],
     };
     try {
         const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -127,8 +127,7 @@ function getUUID() {
     }
     return userData.userID;
 }
-function updateHistory(usrInput, answer) {
-    const filePath = `${__dirname}/user.json`;
+function readWriteData(filePath, updateCallback) {
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
             console.error("Error reading file:", err);
@@ -142,41 +141,29 @@ function updateHistory(usrInput, answer) {
             console.error("Error parsing JSON:", parseError);
             return;
         }
-        const latestConversation = currentData.searchHistory[currentData.searchHistory.length - 1];
-        console.log(latestConversation);
-        const conversation = {
-            messages: latestConversation.messages
-        };
-        // Update history
-        conversation.messages.push(usrInput, answer);
-        console.log("Current data: ", currentData.searchHistory);
-        currentData.searchHistory[currentData.searchHistory.length - 1] = conversation;
-        // Write the updated data back to the file
+        updateCallback(currentData);
         fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
-        // Log the updated file contents
-        console.log(fs.readFileSync(filePath, "utf-8"));
+    });
+}
+function updateHistory(usrInput, answer) {
+    const filePath = `${__dirname}/user.json`;
+    readWriteData(filePath, (currentData) => {
+        const latestConversation = currentData.searchHistory[currentData.searchHistory.length - 1];
+        // Ensure that there is at least one conversation in search history
+        if (!latestConversation) {
+            console.error("No conversation found in search history.");
+            return;
+        }
+        // Clone the messages array to avoid mutating the original data
+        const messages = [...latestConversation.messages, usrInput, answer];
+        // Update the latest conversation with the updated messages
+        currentData.searchHistory[currentData.searchHistory.length - 1] = { messages };
     });
 }
 function newConversation() {
     const filePath = `${__dirname}/user.json`;
-    const newConversation = {
-        messages: []
-    };
-    fs.readFile(filePath, "utf8", (err, data) => {
-        if (err) {
-            console.error("Error reading file:", err);
-            return;
-        }
-        let currentData;
-        try {
-            currentData = JSON.parse(data);
-        }
-        catch (parseError) {
-            console.error("Error parsing JSON:", parseError);
-            return;
-        }
-        currentData.searchHistory.push(newConversation);
-        fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
+    readWriteData(filePath, (currentData) => {
+        currentData.searchHistory.push({ messages: [] });
     });
 }
 //# sourceMappingURL=extension.js.map

@@ -30,16 +30,14 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
-  system_message: { role: string; content: string; } = { //how how the language model acts
+  system_message: { role: string; content: string } = {
+    //how how the language model acts
     role: "system",
     content:
       "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
   };
-  history: [{ role: string; content: string; }] = [
-    this.system_message,
-  ];
+  history: [{ role: string; content: string }] = [this.system_message];
   ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
-
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -67,15 +65,14 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           );
           break;
         case "clear": //emptys chat context for ai api
-          this.history = [
-            this.system_message
-          ];
+          this.history = [this.system_message];
           newConversation();
           break;
       }
     });
   }
-  private openai = new OpenAI({//using openAi library to handle communication
+  private openai = new OpenAI({
+    //using openAi library to handle communication
     baseURL: this.ai_url,
     apiKey: getUUID(),
   });
@@ -84,7 +81,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     if (input !== "" && input !== this.prevInput) {
       this.prevInput = input; //saves input for check to prevent spam
       const usrInput = { role: "user", content: input };
-      this.history.push(usrInput);//model reads first user role content starting from end of array
+      this.history.push(usrInput); //model reads first user role content starting from end of array
       try {
         this._view?.webview.postMessage({ response: "Processing response..." });
         const completion = await this.openai.chat.completions.create({
@@ -94,31 +91,28 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           stream: true,
         });
         const new_message = { role: "assistant", content: "" }; //ai response object
-        for await (const chunk of completion) {//gets reply from ai of user prompt
+        for await (const chunk of completion) {
+          //gets reply from ai of user prompt
           if (chunk.choices[0].delta.content) {
             new_message.content += chunk.choices[0].delta.content;
-            this._view?.webview.postMessage({ response: new_message.content });//streams reply to html
+            this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
           }
         }
-      updateHistory(usrInput.content, new_message.content);
-        this.history.push(new_message);//saves ai response object to history array for context, allows user to reference previous ai answers
-        if (this.history.length > 11) { //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
-          this.history.shift();//removes system prompt
-          this.history.shift();//removes old prompts and replys from array
+        updateHistory(usrInput.content, new_message.content);
+        this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
+        if (this.history.length > 11) {
+          //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
+          this.history.shift(); //removes system prompt
+          this.history.shift(); //removes old prompts and replys from array
           this.history.shift();
-          this.history.unshift(this.system_message);//inserts system prompt to start of array
+          this.history.unshift(this.system_message); //inserts system prompt to start of array
         }
-
       } catch (error) {
         console.log(error);
         vscode.window.showInformationMessage("Failed to connect");
       }
-
-
     } else {
-      vscode.window.showInformationMessage(
-        "Invalid input, please try again"
-      );
+      vscode.window.showInformationMessage("Invalid input, please try again");
     }
     console.log("This is history", this.history);
   }
@@ -149,9 +143,9 @@ function getUUID(): string {
   const filePath = `${__dirname}/user.json`;
   let userData: UserData;
   const conversation: Conversation = {
-    messages: []
+    messages: [],
   };
-    try {
+  try {
     const fileContent = fs.readFileSync(filePath, "utf-8");
     userData = JSON.parse(fileContent);
   } catch (error) {
@@ -159,12 +153,13 @@ function getUUID(): string {
     userData = { userID: newUUID, searchHistory: [conversation] };
     fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
   }
-  return userData.userID; 
+  return userData.userID;
 }
 
-function updateHistory(usrInput: string, answer: string) {
-  const filePath = `${__dirname}/user.json`;
-
+function readWriteData(
+  filePath: string,
+  updateCallback: (currentData: UserData) => void
+): void {
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
       console.error("Error reading file:", err);
@@ -172,53 +167,43 @@ function updateHistory(usrInput: string, answer: string) {
     }
 
     let currentData: UserData;
-
     try {
       currentData = JSON.parse(data);
     } catch (parseError) {
       console.error("Error parsing JSON:", parseError);
       return;
     }
-    const latestConversation = currentData.searchHistory[currentData.searchHistory.length -1];
-    console.log(latestConversation);
-    
-    const conversation: Conversation = {
-      messages: latestConversation.messages
-    };
 
-    // Update history
-    conversation.messages.push(usrInput,answer);
-    console.log("Current data: ", currentData.searchHistory);
-    currentData.searchHistory[currentData.searchHistory.length -1] = conversation;
-    // Write the updated data back to the file
+    updateCallback(currentData);
+
     fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
-
-    // Log the updated file contents
-    console.log(fs.readFileSync(filePath, "utf-8"));
   });
 }
-function newConversation() {
-  const filePath = `${__dirname}/user.json`;
-  const newConversation: Conversation = {
-    messages: []
-  };
 
-  fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
-      console.error("Error reading file:", err);
+function updateHistory(usrInput: string, answer: string): void {
+  const filePath: string = `${__dirname}/user.json`;
+
+  readWriteData(filePath, (currentData: UserData) => {
+    const latestConversation = currentData.searchHistory[currentData.searchHistory.length - 1];
+
+    if (!latestConversation) {
+      console.error("No conversation found in search history.");
       return;
     }
 
-    let currentData: UserData;
+    const messages: string[] = [...latestConversation.messages, usrInput, answer];
 
-    try {
-      currentData = JSON.parse(data);
-    } catch (parseError) {
-      console.error("Error parsing JSON:", parseError);
-      return;
-    }
-    currentData.searchHistory.push(newConversation);
-    fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
+    currentData.searchHistory[currentData.searchHistory.length - 1] = { messages };
+  });
+}
+
+}
+
+function newConversation(): void {
+  const filePath: string = `${__dirname}/user.json`;
+
+  readWriteData(filePath, (currentData: UserData) => {
+    currentData.searchHistory.push({ messages: [] });
   });
 }
 
