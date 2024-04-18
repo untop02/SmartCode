@@ -17,7 +17,8 @@
             <p id='p1'>This is where I will reply</p>
             <p id='p2'></p>
         </div>
-        <script>
+        <script type="module">
+            import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
             const display = document.getElementById('p1');
             const loadingSpinner = document.getElementById('loadingSpinner');
 
@@ -50,14 +51,14 @@
                                 story.unshift(element.content)
                             }
                         });
-                        prev.innerHTML = story.join('<br />');
+                        prev.innerHTML = marked.parse(story.map(code => `${code}`).join('<br />'));
                         break;
                 }
             });
         </script>
     </header>
     <div class="chat-container">
-        <pre><!-- Chat content goes here --></pre>
+       <h1><!-- Chat content goes here --></h1>
     </div>
     <footer>
         <div class="footer-container">
