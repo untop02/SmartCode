@@ -92,7 +92,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       this.history.push(usrInput); //model reads first user role content starting from end of array
       try {
         const message: Message = {
-          address: "koodikeisarit",
           response: "Processing response...",
           sender: "openAi",
         };
@@ -247,7 +246,6 @@ function getHistory(view: vscode.WebviewView | undefined): void {
     const lastConversation =
       currentData.history[currentData.history.length - 1];
     const message: Message = {
-      address: "koodikeisarit",
       response: lastConversation,
       sender: "history",
     };

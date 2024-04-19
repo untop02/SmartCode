@@ -1,5 +1,4 @@
 interface Message {
-  address: string;
   response: string | Conversation;
   sender: string;
 }

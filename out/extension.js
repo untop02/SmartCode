@@ -97,7 +97,6 @@ class SmartCodeProvider {
             this.history.push(usrInput); //model reads first user role content starting from end of array
             try {
                 const message = {
-                    address: "koodikeisarit",
                     response: "Processing response...",
                     sender: "openAi",
                 };
@@ -225,7 +224,6 @@ function getHistory(view) {
         }
         const lastConversation = currentData.history[currentData.history.length - 1];
         const message = {
-            address: "koodikeisarit",
             response: lastConversation,
             sender: "history",
         };
