@@ -1,10 +1,36 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
-const vscode = require("vscode");
-const openai_1 = require("openai");
-const fs = require("node:fs");
-const uuid4 = require("uuid4");
+const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("node:fs"));
+const index_1 = __importDefault(require("../node_modules/openai/index"));
+const uuid4_1 = __importDefault(require("uuid4"));
 function activate(context) {
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
@@ -37,6 +63,7 @@ class SmartCodeProvider {
         const consoleChannel = vscode.window.createOutputChannel("Console");
         webviewView.webview.html = this.getWebContent(webviewView.webview);
         webviewView.webview.onDidReceiveMessage((message) => {
+            // If lauseen sisään??
             consoleChannel.append(message);
             switch (message.command) {
                 case "alert":
@@ -51,10 +78,13 @@ class SmartCodeProvider {
                     this.history = [this.system_message];
                     newConversation();
                     break;
+                case "history":
+                    getHistory(this._view);
+                    break;
             }
         });
     }
-    openai = new openai_1.default({
+    openai = new index_1.default({
         //using openAi library to handle communication
         baseURL: this.ai_url,
         apiKey: getUUID(),
@@ -66,7 +96,12 @@ class SmartCodeProvider {
             const usrInput = { role: "user", content: input };
             this.history.push(usrInput); //model reads first user role content starting from end of array
             try {
-                this._view?.webview.postMessage({ response: "Processing response..." });
+                const message = {
+                    address: "koodikeisarit",
+                    response: "Processing response...",
+                    sender: "openAi",
+                };
+                this._view?.webview.postMessage(message);
                 const completion = await this.openai.chat.completions.create({
                     messages: this.history, //sends history array for ai to interpret
                     model: "gpt-3.5-turbo",
@@ -78,7 +113,8 @@ class SmartCodeProvider {
                     //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
-                        this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
+                        message.response = new_message.content;
+                        this._view?.webview.postMessage(message); //streams reply to html
                     }
                 }
                 updateHistory(usrInput.content, new_message.content);
@@ -125,8 +161,8 @@ function getUUID() {
         userData = JSON.parse(fileContent);
     }
     catch (error) {
-        const newUUID = uuid4();
-        userData = { userID: newUUID, searchHistory: [conversation] };
+        const newUUID = (0, uuid4_1.default)();
+        userData = { userID: newUUID, history: [conversation] };
         fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
     }
     return userData.userID;
@@ -152,17 +188,13 @@ function readWriteData(filePath, updateCallback) {
 function updateHistory(usrInput, answer) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
-        const latestConversation = currentData.searchHistory[currentData.searchHistory.length - 1];
-        if (!latestConversation) {
+        const lastConversation = currentData.history[currentData.history.length - 1];
+        if (!lastConversation) {
             console.error("No conversation found in search history.");
             return;
         }
-        const messages = [
-            ...latestConversation.messages,
-            usrInput,
-            answer,
-        ];
-        currentData.searchHistory[currentData.searchHistory.length - 1] = {
+        const messages = [...lastConversation.messages, usrInput, answer];
+        currentData.history[currentData.history.length - 1] = {
             messages,
         };
     });
@@ -170,7 +202,34 @@ function updateHistory(usrInput, answer) {
 function newConversation() {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
-        currentData.searchHistory.push({ messages: [] });
+        if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
+            console.log("Pushing");
+            currentData.history.push({ messages: [] });
+        }
+    });
+}
+function getHistory(view) {
+    const filePath = `${__dirname}/user.json`;
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading file:", err);
+            return;
+        }
+        let currentData;
+        try {
+            currentData = JSON.parse(data);
+        }
+        catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return;
+        }
+        const lastConversation = currentData.history[currentData.history.length - 1];
+        const message = {
+            address: "koodikeisarit",
+            response: lastConversation,
+            sender: "history",
+        };
+        view?.webview.postMessage(message);
     });
 }
 //# sourceMappingURL=extension.js.map

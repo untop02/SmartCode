@@ -8,7 +8,8 @@ const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput") as HTMLInputElement;
 const copyButton = document.getElementById("copyButton");
-const text = document.getElementById("p1");
+const textP1 = document.getElementById("p1");
+
 function getState(): JSON | string {
   return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
@@ -20,6 +21,7 @@ function setState(newState: string): void {
 function initializeState(): void {
   const currentState = getState();
   inputField.value = currentState as string;
+  vscode.postMessage({ command: "history" });
 }
 
 function sendMessage(): void {
@@ -39,6 +41,10 @@ clearButton?.addEventListener("click", () => {
   clearHistory();
 });
 
+copyButton?.addEventListener("click", () =>
+  setClipboard(textP1?.textContent ?? "")
+);
+
 async function setClipboard(text: string): Promise<void> {
   const type = "text/plain";
   const blob = new Blob([text], { type });
@@ -56,6 +62,32 @@ document?.addEventListener("keypress", (event) => {
     inputText.concat("\n");
   }
 });
+// Pieni securty risk pitää korjaa Soon™
+// Handle the message inside the webview
+window?.addEventListener("message", (event) => {
+  console.log(event);
+  const data: Message = event.data;
+  switch (data.sender) {
+    case "history": {
+      const messages = data.response as Conversation;
+      if (messages.messages.length === 0) {
+        return;
+      }
+      if (textP1) {
+        textP1.textContent = "";
+      }
+      for (const message of messages.messages) {
+        textP1?.append(`${message}\n`);
+      }
+      break;
+    }
+    case "openAi":
+      if (textP1) {
+        textP1.textContent = data.response as string; // The JSON data our extension sent;
+      }
+      break;
+  }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();
@@ -66,7 +98,3 @@ document.getElementById("uInput")?.addEventListener("change", () => {
     .value;
   setState(inputText);
 });
-
-copyButton?.addEventListener("click", () =>
-  setClipboard(text?.textContent ?? "")
-);

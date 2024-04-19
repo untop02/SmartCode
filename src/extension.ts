@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import OpenAI from "openai";
-import type { ChatCompletionMessageParam } from "openai/resources";
 import * as fs from "node:fs";
-import uuid4 = require("uuid4");
+import OpenAI from "../node_modules/openai/index";
+import type { ChatCompletionMessageParam } from "../node_modules/openai/resources/index";
+import uuid4 from "uuid4";
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "Smart Code" is now active!');
@@ -56,6 +56,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this.getWebContent(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage((message) => {
+      // If lauseen sisään??
       consoleChannel.append(message);
       switch (message.command) {
         case "alert":
@@ -72,6 +73,9 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this.history = [this.system_message];
           newConversation();
           break;
+        case "history":
+          getHistory(this._view);
+          break;
       }
     });
   }
@@ -87,7 +91,12 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       const usrInput = { role: "user", content: input };
       this.history.push(usrInput); //model reads first user role content starting from end of array
       try {
-        this._view?.webview.postMessage({ response: "Processing response..." });
+        const message: Message = {
+          address: "koodikeisarit",
+          response: "Processing response...",
+          sender: "openAi",
+        };
+        this._view?.webview.postMessage(message);
         const completion = await this.openai.chat.completions.create({
           messages: this.history as ChatCompletionMessageParam[], //sends history array for ai to interpret
           model: "gpt-3.5-turbo",
@@ -99,7 +108,8 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           //gets reply from ai of user prompt
           if (chunk.choices[0].delta.content) {
             new_message.content += chunk.choices[0].delta.content;
-            this._view?.webview.postMessage({ response: new_message.content }); //streams reply to html
+            message.response = new_message.content;
+            this._view?.webview.postMessage(message); //streams reply to html
           }
         }
         updateHistory(usrInput.content, new_message.content);
@@ -154,7 +164,7 @@ function getUUID(): string {
     userData = JSON.parse(fileContent);
   } catch (error) {
     const newUUID = uuid4();
-    userData = { userID: newUUID, searchHistory: [conversation] };
+    userData = { userID: newUUID, history: [conversation] };
     fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
   }
   return userData.userID;
@@ -188,21 +198,17 @@ function updateHistory(usrInput: string, answer: string): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
-    const latestConversation =
-      currentData.searchHistory[currentData.searchHistory.length - 1];
+    const lastConversation =
+      currentData.history[currentData.history.length - 1];
 
-    if (!latestConversation) {
+    if (!lastConversation) {
       console.error("No conversation found in search history.");
       return;
     }
 
-    const messages: string[] = [
-      ...latestConversation.messages,
-      usrInput,
-      answer,
-    ];
+    const messages: string[] = [...lastConversation.messages, usrInput, answer];
 
-    currentData.searchHistory[currentData.searchHistory.length - 1] = {
+    currentData.history[currentData.history.length - 1] = {
       messages,
     };
   });
@@ -212,15 +218,39 @@ function newConversation(): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
-    currentData.searchHistory.push({ messages: [] });
+    if (
+      currentData.history[currentData.history.length - 1].messages.length !== 0
+    ) {
+      console.log("Pushing");
+
+      currentData.history.push({ messages: [] });
+    }
   });
 }
 
-interface UserData {
-  userID: string;
-  searchHistory: Array<Conversation>;
-}
-interface Conversation {
-  primaryQuestion?: string;
-  messages: Array<string>;
+function getHistory(view: vscode.WebviewView | undefined): void {
+  const filePath: string = `${__dirname}/user.json`;
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading file:", err);
+      return;
+    }
+
+    let currentData: UserData;
+    try {
+      currentData = JSON.parse(data);
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return;
+    }
+
+    const lastConversation =
+      currentData.history[currentData.history.length - 1];
+    const message: Message = {
+      address: "koodikeisarit",
+      response: lastConversation,
+      sender: "history",
+    };
+    view?.webview.postMessage(message);
+  });
 }
