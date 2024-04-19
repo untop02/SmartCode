@@ -10,7 +10,8 @@ body {
 header,
 .chat-container {
   width: 100%;
-  white-space: pre-wrap; /* Preserve whitespace */
+  white-space: pre-wrap;
+  /* Preserve whitespace */
   padding: 10px;
   border-radius: 5px;
 }
@@ -32,6 +33,7 @@ footer {
 .footer-container input {
   width: 100%;
 }
+
 .input-container {
   display: flex;
   justify-content: center;
@@ -39,6 +41,7 @@ footer {
   width: 100%;
   height: 100%;
 }
+
 .button-container {
   display: flex;
   justify-content: center;
@@ -46,6 +49,16 @@ footer {
   width: 100%;
   height: 100%;
   margin-top: 10px;
+}
+
+.scroll {
+  width: 70%;
+  height: 90%;
+  align-items: center;
+  text-align: left;
+  overflow: scroll;
+  padding-left: 10%;
+  padding-right: 10%;
 }
 
 img {
@@ -56,7 +69,7 @@ img {
 
 p,
 #p1 {
-  text-align: center;
+  text-align: left;
   color: darkgray;
 }
 
@@ -107,11 +120,11 @@ button {
 }
 .loader {
   display: none;
-  border: 16px solid #f3f3f3; /* Light grey border */
-  border-top: 16px solid #3498db; /* Blue spinner */
-  border-radius: 50%; /* Make it rounded (circle) */
-  width: 20px;
-  height: 20px;
+  border: 12px solid #f3f3f3; /* Light grey border */
+  border-top: 12px solid #3498db; /* Blue spinner */
+  border-radius: 60%; /* Make it rounded (circle) */
+  width: 10px;
+  height: 10px;
   animation: spin 2s linear infinite; /* Rotate animation */
   position: absolute;
 }

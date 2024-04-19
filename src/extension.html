@@ -9,22 +9,62 @@
     </head>
 
     <body>
-        <script>
-            const vscode = acquireVsCodeApi();
-            const exports = {}
+        <script>const vscode = acquireVsCodeApi();
         </script>
         <header>
             <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
-            <p id='p1'>This is where I will reply</p>
+            <div class="scroll">
+                <p id='p1'>This is where I will reply</p>
+                <p id='p2'></p>
+            </div>
+            <script type="module">
+                import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+                const display = document.getElementById('p1');
+                const loadingSpinner = document.getElementById('loadingSpinner');
+
+                const prev = document.getElementById('p2');
+                // Handle the message inside the webview
+                window.addEventListener('message', event => {
+                    const message = event.data; // The JSON data our extension sent
+                    switch (message.command) {
+                        case 'showSpinner':
+                            document.getElementById('loadingSpinner').style.display = 'block';
+                            break;
+                        case 'hideSpinner':
+                            document.getElementById('loadingSpinner').style.display = 'none';
+                            break;
+                    }
+                    display.textContent = message.response;
+                    switch (message.response.info) {
+                        case "stream":
+                            display.textContent = message.response.text;
+                            break;
+                        case "complete":
+                            //history: [{ role: string; content: string; }]
+                            var history = message.response.text;
+                            history.shift();
+                            var story = [];
+                            history.forEach(element => {
+                                if (element.role == "user") {
+                                    story.unshift("<b>" + element.content + "</b>\n\n");
+                                } else {
+                                    story.unshift(element.content);
+                                }
+                            });
+                            prev.innerHTML = marked.parse(story.map(code => `${code}`).join('<br />'));
+                            break;
+                    }
+                });
+            </script>
         </header>
         <div class="chat-container">
-            <pre><!-- Chat content goes here --></pre>
+            <h1><!-- Chat content goes here --></h1>
         </div>
         <footer>
             <div class="footer-container">
                 <div id="loadingSpinner" class="loader"></div>
                 <div class="input-container">
-                    <textarea type="text" id="uInput" placeholder="Ask SmartCode..."></textarea>
+                    <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
                 </div>
                 <div class="button-container">
                     <button type="button" id="sendButton">Send</button>
@@ -33,7 +73,7 @@
                 </div>
             </div>
         </footer>
-        <script type="module" src="${scriptUri}"></script>
+        <script src="${scriptUri}"></script>
     </body>
 
 </html>

@@ -8,8 +8,10 @@ const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
+    return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
 function setState(newState) {
+    localStorage.setItem("smartCodeState", JSON.stringify(newState));
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
 function initializeState() {
@@ -20,18 +22,27 @@ function initializeState() {
 function sendMessage() {
     vscode.postMessage({ command: "alert", text: inputField.value });
     inputField.value = "";
+    vscode.postMessage({ command: "alert", text: inputField.value });
+    inputField.value = "";
 }
 function clearHistory() {
+    vscode.postMessage({ command: "clear" });
     vscode.postMessage({ command: "clear" });
 }
 sendButton?.addEventListener("click", () => {
     sendMessage();
+    sendMessage();
 });
 clearButton?.addEventListener("click", () => {
+    clearHistory();
     clearHistory();
 });
 copyButton?.addEventListener("click", () => setClipboard(textP1?.textContent ?? ""));
 async function setClipboard(text) {
+    const type = "text/plain";
+    const blob = new Blob([text], { type });
+    const data = [new ClipboardItem({ [type]: blob })];
+    await navigator.clipboard.write(data);
     const type = "text/plain";
     const blob = new Blob([text], { type });
     const data = [new ClipboardItem({ [type]: blob })];
@@ -75,8 +86,12 @@ window?.addEventListener("message", (event) => {
 });
 document.addEventListener("DOMContentLoaded", () => {
     initializeState();
+    initializeState();
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
+    const inputText = document.getElementById("uInput")
+        .value;
+    setState(inputText);
     const inputText = document.getElementById("uInput")
         .value;
     setState(inputText);
