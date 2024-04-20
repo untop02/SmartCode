@@ -7,6 +7,7 @@ body {
   overflow-x: hidden;
 }
 
+/*Tämä aiheuttaa ne merkit jos maalaa ruudun*/
 header,
 .chat-container {
   width: 100%;
@@ -56,7 +57,7 @@ footer {
   height: 90%;
   align-items: center;
   text-align: left;
-  overflow: scroll;
+  overflow: auto;
   padding-left: 10%;
   padding-right: 10%;
 }

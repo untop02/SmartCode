@@ -1,7 +1,7 @@
 interface Vscode {
   postMessage(message: object): void;
 }
-
+declare const marked: JSON;
 declare const vscode: Vscode;
 const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
@@ -9,6 +9,8 @@ const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput") as HTMLInputElement;
 const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
+const textP2 = document.getElementById("p2");
+const spinner = document.getElementById("loadingSpinner");
 
 function getState(): JSON | string {
   return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
@@ -65,29 +67,64 @@ document?.addEventListener("keypress", (event) => {
 // Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
-  console.log(event);
   const data: Message = event.data;
+
   switch (data.sender) {
     case "history": {
-      const messages = data.response as Conversation;
-      if (messages.messages.length === 0) {
-        return;
+      const conversations = data.content as Conversation[];
+      const lastConversation = conversations[conversations.length - 1];
+      for (const conversation of conversations) {
+        console.table(conversation);
       }
+      formatOutput(lastConversation.messages);
+      break;
+    }
+    case "stream": {
       if (textP1) {
-        textP1.textContent = "";
-      }
-      for (const message of messages.messages) {
-        textP1?.append(`${message}\n`);
+        textP1.textContent = data.content as string; // The JSON data our extension sent;
       }
       break;
     }
-    case "openAi":
-      if (textP1) {
-        textP1.textContent = data.response as string; // The JSON data our extension sent;
-      }
+    case "complete": {
+      //history: [{ role: string; content: string; }]
+      const history = data.content as Conversation["messages"];
+      console.log(history);
+
+      history.shift();
+      formatOutput(history);
+
       break;
+    }
+    case "spinner": {
+      if (textP1 && spinner) {
+        if (data.content === "hideSpinner") {
+          spinner.style.display = "none";
+        } else {
+          spinner.style.display = "block";
+        }
+      }
+    }
   }
 });
+async function updateTextP2(story: string[]) {
+  const markedContent = await marked.parse(
+    story.map((code) => `${code}`).join("<br />")
+  );
+  if (textP2) {
+    textP2.innerHTML = markedContent;
+  }
+}
+function formatOutput(history: Conversation["messages"]) {
+  const story: string[] = [];
+  for (const message of history) {
+    if (message.role === "user") {
+      story.unshift(`<b>${message.content}</b>\n\n`);
+    } else {
+      story.unshift(message.content);
+    }
+    updateTextP2(story);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();

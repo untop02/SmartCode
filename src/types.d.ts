@@ -1,12 +1,17 @@
 interface Message {
-  response: string | Conversation;
+  content: string | Conversation[] | MessageContent[];
   sender: string;
 }
+interface MessageContent {
+  role: string;
+  content: string;
+}
+
 interface UserData {
   userID: string;
-  history: Array<Conversation>;
+  history: Conversation[];
 }
 interface Conversation {
   primaryQuestion?: string;
-  messages: Array<string>;
+  messages: MessageContent[];
 }

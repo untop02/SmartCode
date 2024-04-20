@@ -96,11 +96,8 @@ class SmartCodeProvider {
             const usrInput = { role: "user", content: input };
             this.history.push(usrInput); //model reads first user role content starting from end of array
             try {
-                const message = {
-                    response: "Processing response...",
-                    sender: "openAi",
-                };
-                this._view?.webview.postMessage(message);
+                this._view?.webview.postMessage(createMessage("Processing response...", "openAi"));
+                this._view?.webview.postMessage(createMessage("showSpinner", "spinner"));
                 const completion = await this.openai.chat.completions.create({
                     messages: this.history, //sends history array for ai to interpret
                     model: "gpt-3.5-turbo",
@@ -112,12 +109,13 @@ class SmartCodeProvider {
                     //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
-                        message.response = new_message.content;
-                        this._view?.webview.postMessage(message); //streams reply to html
+                        this._view?.webview.postMessage(createMessage(new_message.content, "stream")); //streams reply to html
                     }
                 }
                 updateHistory(usrInput.content, new_message.content);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
+                this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
+                this._view?.webview.postMessage(createMessage(this.history, "complete"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
@@ -166,6 +164,13 @@ function getUUID() {
     }
     return userData.userID;
 }
+function createMessage(response, sender) {
+    const message = {
+        content: response,
+        sender: sender,
+    };
+    return message;
+}
 function readWriteData(filePath, updateCallback) {
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
@@ -192,7 +197,19 @@ function updateHistory(usrInput, answer) {
             console.error("No conversation found in search history.");
             return;
         }
-        const messages = [...lastConversation.messages, usrInput, answer];
+        const user = {
+            role: "user",
+            content: usrInput,
+        };
+        const system = {
+            role: "system",
+            content: answer,
+        };
+        const messages = [
+            ...lastConversation.messages,
+            user,
+            system,
+        ];
         currentData.history[currentData.history.length - 1] = {
             messages,
         };
@@ -222,9 +239,9 @@ function getHistory(view) {
             console.error("Error parsing JSON:", parseError);
             return;
         }
-        const lastConversation = currentData.history[currentData.history.length - 1];
+        createMessage(currentData.history, "history");
         const message = {
-            response: lastConversation,
+            content: currentData.history,
             sender: "history",
         };
         view?.webview.postMessage(message);

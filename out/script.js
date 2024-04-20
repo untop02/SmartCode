@@ -6,12 +6,12 @@ const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput");
 const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
+const textP2 = document.getElementById("p2");
+const spinner = document.getElementById("loadingSpinner");
 function getState() {
-    return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
 function setState(newState) {
-    localStorage.setItem("smartCodeState", JSON.stringify(newState));
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
 function initializeState() {
@@ -22,27 +22,18 @@ function initializeState() {
 function sendMessage() {
     vscode.postMessage({ command: "alert", text: inputField.value });
     inputField.value = "";
-    vscode.postMessage({ command: "alert", text: inputField.value });
-    inputField.value = "";
 }
 function clearHistory() {
-    vscode.postMessage({ command: "clear" });
     vscode.postMessage({ command: "clear" });
 }
 sendButton?.addEventListener("click", () => {
     sendMessage();
-    sendMessage();
 });
 clearButton?.addEventListener("click", () => {
-    clearHistory();
     clearHistory();
 });
 copyButton?.addEventListener("click", () => setClipboard(textP1?.textContent ?? ""));
 async function setClipboard(text) {
-    const type = "text/plain";
-    const blob = new Blob([text], { type });
-    const data = [new ClipboardItem({ [type]: blob })];
-    await navigator.clipboard.write(data);
     const type = "text/plain";
     const blob = new Blob([text], { type });
     const data = [new ClipboardItem({ [type]: blob })];
@@ -61,37 +52,65 @@ document?.addEventListener("keypress", (event) => {
 // Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
-    console.log(event);
     const data = event.data;
     switch (data.sender) {
         case "history": {
-            const messages = data.response;
-            if (messages.messages.length === 0) {
-                return;
+            const conversations = data.content;
+            const lastConversation = conversations[conversations.length - 1];
+            for (const conversation of conversations) {
+                console.table(conversation);
             }
+            formatOutput(lastConversation.messages);
+            break;
+        }
+        case "stream": {
             if (textP1) {
-                textP1.textContent = "";
-            }
-            for (const message of messages.messages) {
-                textP1?.append(`${message}\n`);
+                textP1.textContent = data.content; // The JSON data our extension sent;
             }
             break;
         }
-        case "openAi":
-            if (textP1) {
-                textP1.textContent = data.response; // The JSON data our extension sent;
-            }
+        case "complete": {
+            //history: [{ role: string; content: string; }]
+            const history = data.content;
+            console.log(history);
+            history.shift();
+            formatOutput(history);
             break;
+        }
+        case "spinner": {
+            if (textP1 && spinner) {
+                if (data.content === "hideSpinner") {
+                    spinner.style.display = "none";
+                }
+                else {
+                    spinner.style.display = "block";
+                }
+            }
+        }
     }
 });
+async function updateTextP2(story) {
+    const markedContent = await marked.parse(story.map((code) => `${code}`).join("<br />"));
+    if (textP2) {
+        textP2.innerHTML = markedContent;
+    }
+}
+function formatOutput(history) {
+    const story = [];
+    for (const message of history) {
+        if (message.role === "user") {
+            story.unshift(`<b>${message.content}</b>\n\n`);
+        }
+        else {
+            story.unshift(message.content);
+        }
+        updateTextP2(story);
+    }
+}
 document.addEventListener("DOMContentLoaded", () => {
-    initializeState();
     initializeState();
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
-    const inputText = document.getElementById("uInput")
-        .value;
-    setState(inputText);
     const inputText = document.getElementById("uInput")
         .value;
     setState(inputText);
