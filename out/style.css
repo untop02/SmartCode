@@ -144,3 +144,30 @@ div {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.user-input {
+  border: 1px solid #ccc; /* Box border */
+  background-color: #f0f0f0; /* Background color */
+  padding: 5px; /* Padding */
+  margin-bottom: 10px; /* Margin to separate inputs */
+}
+
+.webview-input {
+  margin-left: 20px; /* Indentation for webview input */
+}
+.code-box {
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  padding: 10px;
+  margin-top: 20px;
+}
+.copy-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 5px 10px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
