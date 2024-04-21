@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="${styleUri}">
-    <title>Smart Code</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="${styleUri}">
+        <title>Smart Code</title>
+    </head>
 
 <body>
     <script>const vscode = acquireVsCodeApi();
@@ -95,5 +95,36 @@
     </footer>
     <script src="${scriptUri}"></script>
 </body>
+    <body>
+        <script>
+            const vscode = acquireVsCodeApi();
+            const exports = {};
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/marked"></script>
+        <header>
+            <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
+            <div class="scroll">
+                <p id='p1'>This is where I will reply</p>
+                <p id='p2'></p>
+            </div>
+        </header>
+        <div class="chat-container">
+            <h1><!-- Chat content goes here --></h1>
+        </div>
+        <footer>
+            <div class="footer-container">
+                <div id="loadingSpinner" class="loader"></div>
+                <div class="input-container">
+                    <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
+                </div>
+                <div class="button-container">
+                    <button type="button" id="sendButton">Send</button>
+                    <button type="button" id="clearButton">Reset</button>
+                    <button type="button" id="copyButton">Copy</button>
+                </div>
+            </div>
+        </footer>
+        <script src="${scriptUri}"></script>
+    </body>
 
 </html>

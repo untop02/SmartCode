@@ -1,10 +1,36 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
-const vscode = require("vscode");
-const openai_1 = require("openai");
-const fs = require("node:fs");
-const uuid4 = require("uuid4");
+const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("node:fs"));
+const index_1 = __importDefault(require("../node_modules/openai/index"));
+const uuid4_1 = __importDefault(require("uuid4"));
 function activate(context) {
     console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
@@ -28,7 +54,7 @@ class SmartCodeProvider {
     };
     history = [this.system_message];
     ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
-    resolveWebviewView(webviewView, context, _token) {
+    resolveWebviewView(webviewView, _context, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
             enableScripts: true,
@@ -37,19 +63,28 @@ class SmartCodeProvider {
         const consoleChannel = vscode.window.createOutputChannel("Console");
         webviewView.webview.html = this.getWebContent(webviewView.webview);
         webviewView.webview.onDidReceiveMessage((message) => {
+            // If lauseen sisään??
             consoleChannel.append(message);
             switch (message.command) {
                 case "alert":
                     this.api(message.text);
-                    vscode.window.showInformationMessage(message.text !== "" ? "Sending: " + message.text : "No input :(");
+                    if (message.text &&
+                        message.text.length > 0 &&
+                        message.text.trim().length > 0) {
+                        vscode.window.showInformationMessage(`Sending: ${message.text}`);
+                    }
                     break;
                 case "clear": //emptys chat context for ai api
                     this.history = [this.system_message];
+                    newConversation();
+                    break;
+                case "history":
+                    getHistory(this._view);
                     break;
             }
         });
     }
-    openai = new openai_1.default({
+    openai = new index_1.default({
         //using openAi library to handle communication
         baseURL: this.ai_url,
         apiKey: getUUID(),
@@ -61,10 +96,8 @@ class SmartCodeProvider {
             const usrInput = { role: "user", content: input };
             this.history.push(usrInput); //model reads first user role content starting from end of array
             try {
-                this._view?.webview.postMessage({
-                    response: { info: "stream", text: "Processing response..." },
-                });
-                this._view?.webview.postMessage({ command: "showSpinner" });
+                this._view?.webview.postMessage(createMessage("Processing response...", "openAi"));
+                this._view?.webview.postMessage(createMessage("showSpinner", "spinner"));
                 const completion = await this.openai.chat.completions.create({
                     messages: this.history, //sends history array for ai to interpret
                     model: "gpt-3.5-turbo",
@@ -76,16 +109,13 @@ class SmartCodeProvider {
                     //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
-                        this._view?.webview.postMessage({
-                            response: { info: "stream", text: new_message.content },
-                        }); //streams reply to html
+                        this._view?.webview.postMessage(createMessage(new_message.content, "stream")); //streams reply to html
                     }
                 }
+                updateHistory(usrInput.content, new_message.content);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage({ command: "hideSpinner" });
-                this._view?.webview.postMessage({
-                    response: { info: "complete", text: this.history },
-                });
+                this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
+                this._view?.webview.postMessage(createMessage(this.history, "complete"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
@@ -102,7 +132,7 @@ class SmartCodeProvider {
         else {
             vscode.window.showInformationMessage("Invalid input, please try again");
         }
-        console.log(this.history);
+        console.log("This is history", this.history);
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
@@ -120,16 +150,101 @@ exports.deactivate = deactivate;
 function getUUID() {
     const filePath = `${__dirname}/user.json`;
     let userData;
+    const conversation = {
+        messages: [],
+    };
     try {
         const fileContent = fs.readFileSync(filePath, "utf-8");
         userData = JSON.parse(fileContent);
     }
     catch (error) {
-        // If file does not exist, create a new UUID
-        const newUUID = uuid4();
-        userData = { userID: newUUID };
+        const newUUID = (0, uuid4_1.default)();
+        userData = { userID: newUUID, history: [conversation] };
         fs.writeFileSync(filePath, JSON.stringify(userData), { flag: "w" });
     }
     return userData.userID;
+}
+function createMessage(response, sender) {
+    const message = {
+        content: response,
+        sender: sender,
+    };
+    return message;
+}
+function readWriteData(filePath, updateCallback) {
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading file:", err);
+            return;
+        }
+        let currentData;
+        try {
+            currentData = JSON.parse(data);
+        }
+        catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return;
+        }
+        updateCallback(currentData);
+        fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
+    });
+}
+function updateHistory(usrInput, answer) {
+    const filePath = `${__dirname}/user.json`;
+    readWriteData(filePath, (currentData) => {
+        const lastConversation = currentData.history[currentData.history.length - 1];
+        if (!lastConversation) {
+            console.error("No conversation found in search history.");
+            return;
+        }
+        const user = {
+            role: "user",
+            content: usrInput,
+        };
+        const system = {
+            role: "system",
+            content: answer,
+        };
+        const messages = [
+            ...lastConversation.messages,
+            user,
+            system,
+        ];
+        currentData.history[currentData.history.length - 1] = {
+            messages,
+        };
+    });
+}
+function newConversation() {
+    const filePath = `${__dirname}/user.json`;
+    readWriteData(filePath, (currentData) => {
+        if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
+            console.log("Pushing");
+            currentData.history.push({ messages: [] });
+        }
+    });
+}
+function getHistory(view) {
+    const filePath = `${__dirname}/user.json`;
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading file:", err);
+            return;
+        }
+        let currentData;
+        try {
+            currentData = JSON.parse(data);
+        }
+        catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return;
+        }
+        createMessage(currentData.history, "history");
+        const message = {
+            content: currentData.history,
+            sender: "history",
+        };
+        view?.webview.postMessage(message);
+    });
 }
 //# sourceMappingURL=extension.js.map
