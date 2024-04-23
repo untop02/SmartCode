@@ -3,6 +3,7 @@ body {
   flex-direction: column;
   align-items: center;
   height: 100vh;
+  width: 98%;
   margin: 0;
   padding: 0;
 }
@@ -129,18 +130,28 @@ div {
   color: gray;
   resize: none;
 }
+
 .loader {
   display: none;
-  border: 16px solid #f3f3f3; /* Light grey border */
-  border-top: 16px solid #3498db; /* Blue spinner */
-  border-radius: 50%; /* Make it rounded (circle) */
+  border: 16px solid #f3f3f3;
+  /* Light grey border */
+  border-top: 16px solid #3498db;
+  /* Blue spinner */
+  border-radius: 50%;
+  /* Make it rounded (circle) */
   width: 20px;
   height: 20px;
-  animation: spin 2s linear infinite; /* Rotate animation */
+  animation: spin 2s linear infinite;
+  /* Rotate animation */
   position: absolute;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

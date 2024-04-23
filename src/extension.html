@@ -13,9 +13,11 @@
     </script>
     <header>
         <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
+    </header>
+    <div class="chat-container">
         <div class="scroll">
-            <p id='p1'>This is where I will reply</p>
-            <p id='p2'></p>
+            <pre id='p1'>This is where I will reply</pre>
+            <pre id='p2'></pre>
         </div>
         <script>
             const display = document.getElementById('p1');
@@ -34,19 +36,16 @@
                         var story = [];
                         history.forEach(element => {
                             if (element.role == "user") {
-                                story.unshift("<b>" + element.content + "</b>\n\n")
+                                story.unshift(element.content + "\n\n")
                             } else {
                                 story.unshift(element.content)
                             }
                         });
-                        prev.innerHTML = story.join('<br />');
+                        prev.textContent = story.join('\n');
                         break;
                 }
             });
         </script>
-    </header>
-    <div class="chat-container">
-        <pre><!-- Chat content goes here --></pre>
     </div>
     <footer>
         <div class="footer-container">
