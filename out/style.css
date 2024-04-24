@@ -98,6 +98,12 @@ button {
   max-width: 200px;
 }
 
+#historyButton {
+  width: 100%;
+  background-color: #3498db;
+  margin-top: 5px;
+}
+
 #sendButton {
   background-color: #f37b31;
 }

@@ -9,7 +9,7 @@ const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loadingSpinner");
 const historyBar = document.getElementById("history");
-const story = [];
+let story = [];
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
@@ -20,6 +20,10 @@ function initializeState() {
     const currentState = getState();
     inputField.value = currentState;
     vscode.postMessage({ command: "history" });
+}
+function setHistory(conversation) {
+    story = [];
+    formatOutput(conversation.messages, story);
 }
 function sendMessage() {
     vscode.postMessage({ command: "alert", text: inputField.value });
@@ -62,11 +66,14 @@ window?.addEventListener("message", (event) => {
                 const conversations = data.content;
                 const lastConversation = conversations[conversations.length - 1];
                 for (const conversation of conversations) {
-                    const firstQuestion = conversation.messages[0];
                     console.table(conversation);
+                    const firstQuestion = conversation.messages[0];
                     const button = document.createElement("button");
-                    button.setAttribute("id", "sendButton");
+                    button.setAttribute("id", "historyButton");
                     button.textContent = firstQuestion.content;
+                    button.addEventListener("click", () => {
+                        setHistory(conversation);
+                    });
                     historyBar?.appendChild(button);
                 }
                 formatOutput(lastConversation.messages, story);
