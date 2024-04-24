@@ -11,6 +11,7 @@ const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loadingSpinner");
+const historyBar = document.getElementById("history");
 const story: string[] = [];
 
 function getState(): JSON | string {
@@ -76,8 +77,14 @@ window?.addEventListener("message", (event) => {
         const conversations = data.content as Conversation[];
         const lastConversation = conversations[conversations.length - 1];
         for (const conversation of conversations) {
+          const firstQuestion = conversation.messages[0];
           console.table(conversation);
+          const button = document.createElement("button");
+          button.setAttribute("id", "sendButton");
+          button.textContent = firstQuestion.content;
+          historyBar?.appendChild(button);
         }
+
         formatOutput(lastConversation.messages, story);
         break;
       }
