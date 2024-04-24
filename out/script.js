@@ -8,6 +8,7 @@ const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loadingSpinner");
+const story = [];
 function getState() {
     return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
 }
@@ -53,32 +54,30 @@ document?.addEventListener("keypress", (event) => {
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
     const data = event.data;
-    switch (data.sender) {
-        case "history": {
-            const conversations = data.content;
-            const lastConversation = conversations[conversations.length - 1];
-            for (const conversation of conversations) {
-                console.table(conversation);
+    console.log(event.origin);
+    if (textP1 && spinner) {
+        switch (data.sender) {
+            case "history": {
+                const conversations = data.content;
+                const lastConversation = conversations[conversations.length - 1];
+                for (const conversation of conversations) {
+                    console.table(conversation);
+                }
+                formatOutput(lastConversation.messages, story);
+                break;
             }
-            formatOutput(lastConversation.messages);
-            break;
-        }
-        case "stream": {
-            if (textP1) {
+            case "stream": {
                 textP1.textContent = data.content; // The JSON data our extension sent;
+                break;
             }
-            break;
-        }
-        case "complete": {
-            //history: [{ role: string; content: string; }]
-            const history = data.content;
-            console.log(history);
-            history.shift();
-            formatOutput(history);
-            break;
-        }
-        case "spinner": {
-            if (textP1 && spinner) {
+            case "complete": {
+                //history: [{ role: string; content: string; }]
+                const history = data.content;
+                history.shift();
+                formatOutput(history, story);
+                break;
+            }
+            case "spinner": {
                 if (data.content === "hideSpinner") {
                     spinner.style.display = "none";
                 }
@@ -95,8 +94,7 @@ async function updateTextP2(story) {
         textP2.innerHTML = markedContent;
     }
 }
-function formatOutput(history) {
-    const story = [];
+function formatOutput(history, story) {
     for (const message of history) {
         if (message.role === "user") {
             story.unshift(`<b>${message.content}</b>\n\n`);
