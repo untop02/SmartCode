@@ -15,3 +15,7 @@ interface Conversation {
   primaryQuestion?: string;
   messages: MessageContent[];
 }
+interface SavedState {
+  inputText: string;
+  historyIndex?: number;
+}

@@ -14,17 +14,28 @@ const spinner = document.getElementById("loadingSpinner");
 const historyBar = document.getElementById("history");
 let story: string[] = [];
 
-function getState(): JSON | string {
-  return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
+function getState(): SavedState | null {
+  const savedStateString = localStorage.getItem("smartCodeState");
+  if (savedStateString) {
+    return JSON.parse(savedStateString);
+  }
+  return null;
 }
 
-function setState(newState: string): void {
+function setState(newState: SavedState): void {
   localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
 
 function initializeState(): void {
-  const currentState = getState();
-  inputField.value = currentState as string;
+  const currentState: SavedState = getState() ?? {
+    inputText: "",
+    historyIndex: 0,
+  };
+
+  console.log("Current state:", JSON.stringify(currentState));
+
+  inputField.value = currentState.inputText;
+
   vscode.postMessage({ command: "history" });
 }
 
@@ -71,6 +82,7 @@ document?.addEventListener("keypress", (event) => {
     inputText.concat("\n");
   }
 });
+
 // Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
@@ -79,24 +91,26 @@ window?.addEventListener("message", (event) => {
   if (textP1 && spinner) {
     switch (data.sender) {
       case "history": {
-        const conversations = data.content as Conversation[];
-        const lastConversation = conversations[conversations.length - 1];
-        for (const conversation of conversations) {
-          console.table(conversation);
+        // Define a default empty conversation
+        let showedConversation: Conversation = { messages: [] };
 
-          const firstQuestion = conversation.messages[0];
-          const button = document.createElement("button");
-          button.setAttribute("id", "historyButton");
-          button.textContent = firstQuestion.content;
-          button.addEventListener("click", () => {
-            setHistory(conversation);
-          });
-          historyBar?.appendChild(button);
+        const currentState = getState();
+
+        // Retrieve conversations from data
+        const conversations = data.content as Conversation[];
+
+        if (
+          currentState?.historyIndex !== undefined &&
+          currentState?.historyIndex !== null
+        ) {
+          showedConversation = conversations[currentState.historyIndex];
+          createHistoryButtons(conversations);
         }
 
-        formatOutput(lastConversation.messages, story);
+        formatOutput(showedConversation.messages, story);
         break;
       }
+
       case "stream": {
         textP1.textContent = data.content as string; // The JSON data our extension sent;
         break;
@@ -135,6 +149,31 @@ function formatOutput(history: Conversation["messages"], story: string[]) {
     }
     updateTextP2(story);
   }
+  console.log(history);
+}
+
+function createHistoryButtons(conversations: Conversation[]): void {
+  let index = 0;
+  for (const conversation of conversations) {
+    const firstQuestion = conversation.messages[0];
+    const button = document.createElement("button");
+    button.setAttribute("class", "historyButton");
+    button.setAttribute("id", String(index));
+    button.textContent = firstQuestion.content;
+    button.addEventListener("click", () => {
+      const state = getState();
+      // Update the history index in the state and save it
+      if (state !== undefined && state !== null) {
+        state.historyIndex = Number(button.id);
+        console.log(state);
+        setState(state);
+      }
+      // Update the UI based on the selected conversation
+      setHistory(conversation);
+    });
+    historyBar?.appendChild(button);
+    index++;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -142,7 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.getElementById("uInput")?.addEventListener("change", () => {
-  const inputText = (document.getElementById("uInput") as HTMLInputElement)
-    .value;
-  setState(inputText);
+  const inputText = inputField.value;
+  const state = getState();
+  if (state !== undefined && state !== null) {
+    console.log(inputText);
+
+    state.inputText = inputText;
+    setState(state);
+  }
 });

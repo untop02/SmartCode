@@ -11,14 +11,22 @@ const spinner = document.getElementById("loadingSpinner");
 const historyBar = document.getElementById("history");
 let story = [];
 function getState() {
-    return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
+    const savedStateString = localStorage.getItem("smartCodeState");
+    if (savedStateString) {
+        return JSON.parse(savedStateString);
+    }
+    return null;
 }
 function setState(newState) {
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
 }
 function initializeState() {
-    const currentState = getState();
-    inputField.value = currentState;
+    const currentState = getState() ?? {
+        inputText: "",
+        historyIndex: 0,
+    };
+    console.log("Current state:", JSON.stringify(currentState));
+    inputField.value = currentState.inputText;
     vscode.postMessage({ command: "history" });
 }
 function setHistory(conversation) {
@@ -63,20 +71,17 @@ window?.addEventListener("message", (event) => {
     if (textP1 && spinner) {
         switch (data.sender) {
             case "history": {
+                // Define a default empty conversation
+                let showedConversation = { messages: [] };
+                const currentState = getState();
+                // Retrieve conversations from data
                 const conversations = data.content;
-                const lastConversation = conversations[conversations.length - 1];
-                for (const conversation of conversations) {
-                    console.table(conversation);
-                    const firstQuestion = conversation.messages[0];
-                    const button = document.createElement("button");
-                    button.setAttribute("id", "historyButton");
-                    button.textContent = firstQuestion.content;
-                    button.addEventListener("click", () => {
-                        setHistory(conversation);
-                    });
-                    historyBar?.appendChild(button);
+                if (currentState?.historyIndex !== undefined &&
+                    currentState?.historyIndex !== null) {
+                    showedConversation = conversations[currentState.historyIndex];
+                    createHistoryButtons(conversations);
                 }
-                formatOutput(lastConversation.messages, story);
+                formatOutput(showedConversation.messages, story);
                 break;
             }
             case "stream": {
@@ -117,13 +122,41 @@ function formatOutput(history, story) {
         }
         updateTextP2(story);
     }
+    console.log(history);
+}
+function createHistoryButtons(conversations) {
+    let index = 0;
+    for (const conversation of conversations) {
+        const firstQuestion = conversation.messages[0];
+        const button = document.createElement("button");
+        button.setAttribute("class", "historyButton");
+        button.setAttribute("id", String(index));
+        button.textContent = firstQuestion.content;
+        button.addEventListener("click", () => {
+            const state = getState();
+            // Update the history index in the state and save it
+            if (state !== undefined && state !== null) {
+                state.historyIndex = Number(button.id);
+                console.log(state);
+                setState(state);
+            }
+            // Update the UI based on the selected conversation
+            setHistory(conversation);
+        });
+        historyBar?.appendChild(button);
+        index++;
+    }
 }
 document.addEventListener("DOMContentLoaded", () => {
     initializeState();
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
-    const inputText = document.getElementById("uInput")
-        .value;
-    setState(inputText);
+    const inputText = inputField.value;
+    const state = getState();
+    if (state !== undefined && state !== null) {
+        console.log(inputText);
+        state.inputText = inputText;
+        setState(state);
+    }
 });
 //# sourceMappingURL=script.js.map

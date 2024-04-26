@@ -275,7 +275,7 @@ function getHistory(view: vscode.WebviewView | undefined): void {
     }
     createMessage(currentData.history, "history");
     const message: Message = {
-      content: currentData.history,
+      content: currentData.history.toReversed(),
       sender: "history",
     };
     view?.webview.postMessage(message);

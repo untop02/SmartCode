@@ -241,7 +241,7 @@ function getHistory(view) {
         }
         createMessage(currentData.history, "history");
         const message = {
-            content: currentData.history,
+            content: currentData.history.toReversed(),
             sender: "history",
         };
         view?.webview.postMessage(message);
