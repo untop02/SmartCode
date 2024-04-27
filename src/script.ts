@@ -1,6 +1,3 @@
-interface Vscode {
-  postMessage(message: object): void;
-}
 declare const marked: JSON;
 declare const vscode: Vscode;
 const div = document.getElementsByClassName("chat-container");
@@ -12,7 +9,17 @@ const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loadingSpinner");
 const historyBar = document.getElementById("history");
-let story: string[] = [];
+
+const globalState: GlobalState & Story = {
+  currentState: {
+    inputText: "",
+    historyIndex: 0,
+  },
+  story: [],
+  clearStory() {
+    this.story = [];
+  },
+};
 
 function getState(): SavedState | null {
   const savedStateString = localStorage.getItem("smartCodeState");
@@ -24,29 +31,31 @@ function getState(): SavedState | null {
 
 function setState(newState: SavedState): void {
   localStorage.setItem("smartCodeState", JSON.stringify(newState));
+  globalState.currentState = newState;
 }
 
 function initializeState(): void {
-  const currentState: SavedState = getState() ?? {
-    inputText: "",
-    historyIndex: 0,
-  };
+  globalState.currentState = getState() ?? globalState.currentState;
 
-  console.log("Current state:", JSON.stringify(currentState));
-
-  inputField.value = currentState.inputText;
+  inputField.value = globalState.currentState.inputText;
 
   vscode.postMessage({ command: "history" });
 }
 
 function setHistory(conversation: Conversation) {
-  story = [];
-  formatOutput(conversation.messages, story);
+  globalState.clearStory();
+  formatOutput(conversation.messages, globalState.story);
 }
 
 function sendMessage(): void {
-  vscode.postMessage({ command: "alert", text: inputField.value });
+  const conversationIndex = globalState.currentState.historyIndex;
+  vscode.postMessage({
+    command: "ask",
+    text: inputField.value,
+    index: conversationIndex,
+  });
   inputField.value = "";
+  console.log(globalState.currentState.historyIndex);
 }
 
 function clearHistory(): void {
@@ -86,6 +95,7 @@ document?.addEventListener("keypress", (event) => {
 // Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
+  const currentState = globalState.currentState;
   const data: Message = event.data;
   console.log(event.origin);
   if (textP1 && spinner) {
@@ -94,11 +104,8 @@ window?.addEventListener("message", (event) => {
         // Define a default empty conversation
         let showedConversation: Conversation = { messages: [] };
 
-        const currentState = getState();
-
         // Retrieve conversations from data
         const conversations = data.content as Conversation[];
-
         if (
           currentState?.historyIndex !== undefined &&
           currentState?.historyIndex !== null
@@ -107,7 +114,7 @@ window?.addEventListener("message", (event) => {
           createHistoryButtons(conversations);
         }
 
-        formatOutput(showedConversation.messages, story);
+        formatOutput(showedConversation.messages, globalState.story);
         break;
       }
 
@@ -119,7 +126,7 @@ window?.addEventListener("message", (event) => {
         //history: [{ role: string; content: string; }]
         const history = data.content as Conversation["messages"];
         history.shift();
-        formatOutput(history, story);
+        formatOutput(history, globalState.story);
         break;
       }
       case "spinner": {
@@ -153,27 +160,20 @@ function formatOutput(history: Conversation["messages"], story: string[]) {
 }
 
 function createHistoryButtons(conversations: Conversation[]): void {
-  let index = 0;
-  for (const conversation of conversations) {
+  const currentState = globalState.currentState;
+  conversations.forEach((conversation, index) => {
     const firstQuestion = conversation.messages[0];
     const button = document.createElement("button");
-    button.setAttribute("class", "historyButton");
-    button.setAttribute("id", String(index));
+    button.classList.add("historyButton");
+    button.id = String(index);
     button.textContent = firstQuestion.content;
     button.addEventListener("click", () => {
-      const state = getState();
-      // Update the history index in the state and save it
-      if (state !== undefined && state !== null) {
-        state.historyIndex = Number(button.id);
-        console.log(state);
-        setState(state);
-      }
-      // Update the UI based on the selected conversation
+      currentState.historyIndex = Number(button.id);
+      setState(currentState);
       setHistory(conversation);
     });
     historyBar?.appendChild(button);
-    index++;
-  }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -182,11 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("uInput")?.addEventListener("change", () => {
   const inputText = inputField.value;
-  const state = getState();
-  if (state !== undefined && state !== null) {
-    console.log(inputText);
-
-    state.inputText = inputText;
-    setState(state);
-  }
+  const currentState = globalState.currentState;
+  currentState.inputText = inputText;
+  setState(currentState);
 });
