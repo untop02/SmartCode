@@ -33,6 +33,8 @@ function sendMessage(): void {
 
 function clearHistory(): void {
   vscode.postMessage({ command: "clear" });
+  if (textP1) { textP1.textContent = ''; };
+  if (textP2) { textP2.textContent = ''; };
 }
 
 sendButton?.addEventListener("click", () => {
@@ -86,10 +88,9 @@ window?.addEventListener("message", (event) => {
       break;
     }
     case "complete": {
-      //history: [{ role: string; content: string; }]
       const history = data.content as Conversation["messages"];
       console.log(history);
-
+      if (textP1) { textP1.textContent = ''; }
       history.shift();
       formatOutput(history);
 
@@ -108,17 +109,19 @@ window?.addEventListener("message", (event) => {
 });
 async function updateTextP2(story: string[]) {
   const markedContent = await marked.parse(
-    story.map((code) => `${code}`).join("<br />")
+    story.map((code) => `${code}`).join('\n')
   );
   if (textP2) {
+    console.log('daContent', markedContent);
     textP2.innerHTML = markedContent;
+
   }
 }
 function formatOutput(history: Conversation["messages"]) {
   const story: string[] = [];
   for (const message of history) {
     if (message.role === "user") {
-      story.unshift(`<b>${message.content}</b>\n\n`);
+      story.unshift(`${message.content}`);
     } else {
       story.unshift(message.content);
     }
