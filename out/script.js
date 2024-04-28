@@ -8,20 +8,46 @@ const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loadingSpinner");
+const historyBar = document.getElementById("history");
+const globalState = {
+    currentState: {
+        inputText: "",
+        historyIndex: 0,
+    },
+    story: [],
+    clearStory() {
+        this.story = [];
+    },
+};
 function getState() {
-    return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
+    const savedStateString = localStorage.getItem("smartCodeState");
+    if (savedStateString) {
+        return JSON.parse(savedStateString);
+    }
+    return null;
 }
 function setState(newState) {
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
+    globalState.currentState = newState;
 }
 function initializeState() {
-    const currentState = getState();
-    inputField.value = currentState;
+    globalState.currentState = getState() ?? globalState.currentState;
+    inputField.value = globalState.currentState.inputText;
     vscode.postMessage({ command: "history" });
 }
+function setHistory(conversation) {
+    globalState.clearStory();
+    formatOutput(conversation.messages, globalState.story);
+}
 function sendMessage() {
-    vscode.postMessage({ command: "alert", text: inputField.value });
+    const conversationIndex = globalState.currentState.historyIndex;
+    vscode.postMessage({
+        command: "ask",
+        text: inputField.value,
+        index: conversationIndex,
+    });
     inputField.value = "";
+    console.log(globalState.currentState.historyIndex);
 }
 function clearHistory() {
     vscode.postMessage({ command: "clear" });
@@ -60,35 +86,36 @@ document?.addEventListener("keypress", (event) => {
 // Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
+    const currentState = globalState.currentState;
     const data = event.data;
-    switch (data.sender) {
-        case "history": {
-            const conversations = data.content;
-            const lastConversation = conversations[conversations.length - 1];
-            for (const conversation of conversations) {
-                console.table(conversation);
+    console.log(event.origin);
+    if (textP1 && spinner) {
+        switch (data.sender) {
+            case "history": {
+                // Define a default empty conversation
+                let showedConversation = { messages: [] };
+                // Retrieve conversations from data
+                const conversations = data.content;
+                if (currentState?.historyIndex !== undefined &&
+                    currentState?.historyIndex !== null) {
+                    showedConversation = conversations[currentState.historyIndex];
+                    createHistoryButtons(conversations);
+                }
+                formatOutput(showedConversation.messages, globalState.story);
+                break;
             }
-            formatOutput(lastConversation.messages);
-            break;
-        }
-        case "stream": {
-            if (textP1) {
+            case "stream": {
                 textP1.textContent = data.content; // The JSON data our extension sent;
+                break;
             }
-            break;
-        }
-        case "complete": {
-            const history = data.content;
-            console.log(history);
-            if (textP1) {
-                textP1.textContent = '';
+            case "complete": {
+                //history: [{ role: string; content: string; }]
+                const history = data.content;
+                history.shift();
+                formatOutput(history, globalState.story);
+                break;
             }
-            history.shift();
-            formatOutput(history);
-            break;
-        }
-        case "spinner": {
-            if (textP1 && spinner) {
+            case "spinner": {
                 if (data.content === "hideSpinner") {
                     spinner.style.display = "none";
                 }
@@ -106,8 +133,7 @@ async function updateTextP2(story) {
         textP2.innerHTML = markedContent;
     }
 }
-function formatOutput(history) {
-    const story = [];
+function formatOutput(history, story) {
     for (const message of history) {
         if (message.role === "user") {
             story.unshift(`${message.content}`);
@@ -117,13 +143,31 @@ function formatOutput(history) {
         }
         updateTextP2(story);
     }
+    console.log(history);
+}
+function createHistoryButtons(conversations) {
+    const currentState = globalState.currentState;
+    conversations.forEach((conversation, index) => {
+        const firstQuestion = conversation.messages[0];
+        const button = document.createElement("button");
+        button.classList.add("historyButton");
+        button.id = String(index);
+        button.textContent = firstQuestion.content;
+        button.addEventListener("click", () => {
+            currentState.historyIndex = Number(button.id);
+            setState(currentState);
+            setHistory(conversation);
+        });
+        historyBar?.appendChild(button);
+    });
 }
 document.addEventListener("DOMContentLoaded", () => {
     initializeState();
 });
 document.getElementById("uInput")?.addEventListener("change", () => {
-    const inputText = document.getElementById("uInput")
-        .value;
-    setState(inputText);
+    const inputText = inputField.value;
+    const currentState = globalState.currentState;
+    currentState.inputText = inputText;
+    setState(currentState);
 });
 //# sourceMappingURL=script.js.map

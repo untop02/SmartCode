@@ -1,6 +1,3 @@
-interface Vscode {
-  postMessage(message: object): void;
-}
 declare const marked: JSON;
 declare const vscode: Vscode;
 const div = document.getElementsByClassName("chat-container");
@@ -11,24 +8,54 @@ const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loadingSpinner");
+const historyBar = document.getElementById("history");
 
-function getState(): JSON | string {
-  return JSON.parse(localStorage.getItem("smartCodeState") ?? "");
+const globalState: GlobalState & Story = {
+  currentState: {
+    inputText: "",
+    historyIndex: 0,
+  },
+  story: [],
+  clearStory() {
+    this.story = [];
+  },
+};
+
+function getState(): SavedState | null {
+  const savedStateString = localStorage.getItem("smartCodeState");
+  if (savedStateString) {
+    return JSON.parse(savedStateString);
+  }
+  return null;
 }
 
-function setState(newState: string): void {
+function setState(newState: SavedState): void {
   localStorage.setItem("smartCodeState", JSON.stringify(newState));
+  globalState.currentState = newState;
 }
 
 function initializeState(): void {
-  const currentState = getState();
-  inputField.value = currentState as string;
+  globalState.currentState = getState() ?? globalState.currentState;
+
+  inputField.value = globalState.currentState.inputText;
+
   vscode.postMessage({ command: "history" });
 }
 
+function setHistory(conversation: Conversation) {
+  globalState.clearStory();
+  formatOutput(conversation.messages, globalState.story);
+}
+
 function sendMessage(): void {
-  vscode.postMessage({ command: "alert", text: inputField.value });
+  const conversationIndex = globalState.currentState.historyIndex;
+  vscode.postMessage({
+    command: "ask",
+    text: inputField.value,
+    index: conversationIndex,
+  });
   inputField.value = "";
+  console.log(globalState.currentState.historyIndex);
 }
 
 function clearHistory(): void {
@@ -66,38 +93,45 @@ document?.addEventListener("keypress", (event) => {
     inputText.concat("\n");
   }
 });
+
 // Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
+  const currentState = globalState.currentState;
   const data: Message = event.data;
+  console.log(event.origin);
+  if (textP1 && spinner) {
+    switch (data.sender) {
+      case "history": {
+        // Define a default empty conversation
+        let showedConversation: Conversation = { messages: [] };
 
-  switch (data.sender) {
-    case "history": {
-      const conversations = data.content as Conversation[];
-      const lastConversation = conversations[conversations.length - 1];
-      for (const conversation of conversations) {
-        console.table(conversation);
+        // Retrieve conversations from data
+        const conversations = data.content as Conversation[];
+        if (
+          currentState?.historyIndex !== undefined &&
+          currentState?.historyIndex !== null
+        ) {
+          showedConversation = conversations[currentState.historyIndex];
+          createHistoryButtons(conversations);
+        }
+
+        formatOutput(showedConversation.messages, globalState.story);
+        break;
       }
-      formatOutput(lastConversation.messages);
-      break;
-    }
-    case "stream": {
-      if (textP1) {
+
+      case "stream": {
         textP1.textContent = data.content as string; // The JSON data our extension sent;
+        break;
       }
-      break;
-    }
-    case "complete": {
-      const history = data.content as Conversation["messages"];
-      console.log(history);
-      if (textP1) { textP1.textContent = ''; }
-      history.shift();
-      formatOutput(history);
-
-      break;
-    }
-    case "spinner": {
-      if (textP1 && spinner) {
+      case "complete": {
+        //history: [{ role: string; content: string; }]
+        const history = data.content as Conversation["messages"];
+        history.shift();
+        formatOutput(history, globalState.story);
+        break;
+      }
+      case "spinner": {
         if (data.content === "hideSpinner") {
           spinner.style.display = "none";
         } else {
@@ -117,8 +151,7 @@ async function updateTextP2(story: string[]) {
 
   }
 }
-function formatOutput(history: Conversation["messages"]) {
-  const story: string[] = [];
+function formatOutput(history: Conversation["messages"], story: string[]) {
   for (const message of history) {
     if (message.role === "user") {
       story.unshift(`${message.content}`);
@@ -127,6 +160,24 @@ function formatOutput(history: Conversation["messages"]) {
     }
     updateTextP2(story);
   }
+  console.log(history);
+}
+
+function createHistoryButtons(conversations: Conversation[]): void {
+  const currentState = globalState.currentState;
+  conversations.forEach((conversation, index) => {
+    const firstQuestion = conversation.messages[0];
+    const button = document.createElement("button");
+    button.classList.add("historyButton");
+    button.id = String(index);
+    button.textContent = firstQuestion.content;
+    button.addEventListener("click", () => {
+      currentState.historyIndex = Number(button.id);
+      setState(currentState);
+      setHistory(conversation);
+    });
+    historyBar?.appendChild(button);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -134,7 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.getElementById("uInput")?.addEventListener("change", () => {
-  const inputText = (document.getElementById("uInput") as HTMLInputElement)
-    .value;
-  setState(inputText);
+  const inputText = inputField.value;
+  const currentState = globalState.currentState;
+  currentState.inputText = inputText;
+  setState(currentState);
 });

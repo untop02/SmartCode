@@ -60,14 +60,11 @@ class SmartCodeProvider {
             enableScripts: true,
             localResourceRoots: [this._extensionUri],
         };
-        const consoleChannel = vscode.window.createOutputChannel("Console");
         webviewView.webview.html = this.getWebContent(webviewView.webview);
         webviewView.webview.onDidReceiveMessage((message) => {
-            // If lauseen sisään??
-            consoleChannel.append(message);
             switch (message.command) {
-                case "alert":
-                    this.api(message.text);
+                case "ask":
+                    this.api(message.text, message.index);
                     if (message.text &&
                         message.text.length > 0 &&
                         message.text.trim().length > 0) {
@@ -81,6 +78,9 @@ class SmartCodeProvider {
                 case "history":
                     getHistory(this._view);
                     break;
+                case "context":
+                    console.log(message.index);
+                    break;
             }
         });
     }
@@ -90,7 +90,8 @@ class SmartCodeProvider {
         apiKey: getUUID(),
     });
     prevInput = "";
-    async api(input) {
+    async api(input, conversationIndex) {
+        console.log(this.history);
         if (input !== "" && input !== this.prevInput) {
             this.prevInput = input; //saves input for check to prevent spam
             const usrInput = { role: "user", content: input };
@@ -112,7 +113,7 @@ class SmartCodeProvider {
                         this._view?.webview.postMessage(createMessage(new_message.content, "stream")); //streams reply to html
                     }
                 }
-                updateHistory(usrInput.content, new_message.content);
+                updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
                 this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 this._view?.webview.postMessage(createMessage(this.history, "complete"));
@@ -189,11 +190,12 @@ function readWriteData(filePath, updateCallback) {
         fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
     });
 }
-function updateHistory(usrInput, answer) {
+function updateHistory(usrInput, answer, conversationIndex) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
-        const lastConversation = currentData.history[currentData.history.length - 1];
-        if (!lastConversation) {
+        const reversedHistory = currentData.history.toReversed();
+        const conversation = reversedHistory[conversationIndex];
+        if (!conversation) {
             console.error("No conversation found in search history.");
             return;
         }
@@ -205,14 +207,11 @@ function updateHistory(usrInput, answer) {
             role: "system",
             content: answer,
         };
-        const messages = [
-            ...lastConversation.messages,
-            user,
-            system,
-        ];
-        currentData.history[currentData.history.length - 1] = {
+        const messages = [...conversation.messages, user, system];
+        reversedHistory[conversationIndex] = {
             messages,
         };
+        currentData.history = reversedHistory.toReversed();
     });
 }
 function newConversation() {
@@ -241,7 +240,7 @@ function getHistory(view) {
         }
         createMessage(currentData.history, "history");
         const message = {
-            content: currentData.history,
+            content: currentData.history.toReversed(),
             sender: "history",
         };
         view?.webview.postMessage(message);
