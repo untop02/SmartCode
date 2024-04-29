@@ -5,7 +5,6 @@ import type { ChatCompletionMessageParam } from "../node_modules/openai/resource
 import uuid4 from "uuid4";
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Congratulations, your extension "Smart Code" is now active!');
 
   const provider = new SmartCodeProvider(context.extensionUri);
 
@@ -28,7 +27,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly _extensionUri: vscode.Uri) { }
 
   system_message: MessageContent = {
     //how how the language model acts
@@ -115,12 +114,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         }
         updateHistory(usrInput.content, new_message.content, conversationIndex);
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-        this._view?.webview.postMessage(
-          createMessage("hideSpinner", "spinner")
-        );
-        this._view?.webview.postMessage(
-          createMessage(this.history, "complete")
-        );
 
         if (this.history.length > 11) {
           //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
@@ -159,7 +152,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     return htmlContent;
   }
 }
-export function deactivate() {}
 
 function getUUID(): string {
   const filePath = `${__dirname}/user.json`;

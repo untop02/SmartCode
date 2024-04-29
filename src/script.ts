@@ -1,6 +1,5 @@
 declare const marked: JSON;
 declare const vscode: Vscode;
-const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput") as HTMLInputElement;
@@ -36,9 +35,6 @@ function setState(newState: SavedState): void {
 
 function initializeState(): void {
   globalState.currentState = getState() ?? globalState.currentState;
-
-  inputField.value = globalState.currentState.inputText;
-
   vscode.postMessage({ command: "history" });
 }
 

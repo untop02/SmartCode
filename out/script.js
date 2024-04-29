@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const div = document.getElementsByClassName("chat-container");
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearButton");
 const inputField = document.getElementById("uInput");
@@ -32,7 +31,6 @@ function setState(newState) {
 }
 function initializeState() {
     globalState.currentState = getState() ?? globalState.currentState;
-    inputField.value = globalState.currentState.inputText;
     vscode.postMessage({ command: "history" });
 }
 function setHistory(conversation) {

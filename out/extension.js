@@ -26,13 +26,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = void 0;
+exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("node:fs"));
 const index_1 = __importDefault(require("../node_modules/openai/index"));
 const uuid4_1 = __importDefault(require("uuid4"));
 function activate(context) {
-    console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SmartCodeProvider.viewType, provider));
     context.subscriptions.push(vscode.commands.registerCommand("smartCode.openView", () => {
@@ -115,8 +114,6 @@ class SmartCodeProvider {
                 }
                 updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
-                this._view?.webview.postMessage(createMessage(this.history, "complete"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
@@ -146,8 +143,6 @@ class SmartCodeProvider {
         return htmlContent;
     }
 }
-function deactivate() { }
-exports.deactivate = deactivate;
 function getUUID() {
     const filePath = `${__dirname}/user.json`;
     let userData;
