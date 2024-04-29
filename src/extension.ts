@@ -26,7 +26,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly _extensionUri: vscode.Uri) { }
 
   system_message: MessageContent = {
     //how how the language model acts
@@ -66,6 +66,10 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         case "clear": //emptys chat context for ai api
           this.history = [this.system_message];
           newConversation();
+          break;
+        case "delete": //emptys chat context for ai api
+          this.history = [this.system_message];
+          deleteHistory(this._view);
           break;
         case "history":
           getHistory(this._view);
@@ -114,7 +118,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         updateHistory(usrInput.content, new_message.content, conversationIndex);
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
         this._view?.webview.postMessage(
-          createMessage(this.history, "complete")
+          createMessage([usrInput, new_message], "complete")
         );
         this._view?.webview.postMessage(
           createMessage("hideSpinner", "spinner")
@@ -257,6 +261,21 @@ function newConversation(): void {
     }
   });
 }
+
+function deleteHistory(view: vscode.WebviewView | undefined): void {
+  const filePath: string = `${__dirname}/user.json`;
+
+  readWriteData(filePath, (currentData: UserData) => {
+
+    console.log("Murder");
+
+    currentData.history.length = 0;
+    currentData.history.push({ messages: [] });
+    getHistory(view);
+  });
+}
+
+
 
 function getHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;

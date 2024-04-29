@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const sendButton = document.getElementById("sendButton");
-const clearButton = document.getElementById("clearButton");
+const clearButton = document.getElementById("clearChat");
 const inputField = document.getElementById("uInput");
 const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
@@ -50,10 +50,17 @@ function sendMessage() {
     console.log(globalState.currentState.historyIndex);
 }
 function clearHistory() {
-    vscode.postMessage({ command: "clear" });
+    vscode.postMessage({ command: "delete" });
     if (textP1 && textP2) {
         textP1.textContent = "";
         textP2.textContent = "";
+    }
+    globalState.clearStory();
+    const children = Array.prototype.slice.call(historyBar?.children);
+    for (const button of children) {
+        if (!Number.isNaN(Number(button.id))) {
+            button.remove();
+        }
     }
 }
 sendButton?.addEventListener("click", () => {
@@ -69,7 +76,7 @@ newButton?.addEventListener("click", () => {
         vscode.postMessage({ command: "clear" });
         const button = document.createElement("button");
         button.classList.add("historyButton");
-        button.textContent = "History";
+        button.textContent = "Current";
         button.id = String(0);
         button.addEventListener("click", () => {
             currentState.historyIndex = Number(button.id);
@@ -128,7 +135,6 @@ window?.addEventListener("message", (event) => {
             case "complete": {
                 //history: [{ role: string; content: string; }]
                 const history = data.content;
-                history.shift();
                 formatOutput(history, globalState.story);
                 break;
             }
@@ -148,7 +154,6 @@ function insertAfter(newNode, referenceNode) {
 }
 async function updateTextP2(story) {
     const markedContent = await marked.parse(story.map((code) => `${code}`).join("\n"));
-    console.log("marked", markedContent);
     if (textP2) {
         const regex = /<\/pre>/g;
         const out = markedContent.replace(regex, '</pre> <button class="copy-button">Copy</button>');
@@ -199,7 +204,7 @@ function createHistoryButtons(conversations) {
         button.classList.add("historyButton");
         button.id = String(index);
         button.textContent =
-            firstQuestion !== undefined ? firstQuestion.content : "History";
+            firstQuestion !== undefined ? firstQuestion.content : "Current";
         button.addEventListener("click", () => {
             currentState.historyIndex = Number(button.id);
             console.log(`button.id: ${button.id} story ${globalState.story}`);
