@@ -25,4 +25,4 @@ jobs:
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.AZURE_TOKEN }}" > ~/.npmrc
 
       - name: Package VSIX
-        run: npx vsce package --out Smart_Code.vsix
+        run: npx vsce package --out dist/Smart_Code.vsix
