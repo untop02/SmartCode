@@ -235,12 +235,7 @@ function getHistory(view) {
             console.error("Error parsing JSON:", parseError);
             return;
         }
-        createMessage(currentData.history, "history");
-        const message = {
-            content: currentData.history.toReversed(),
-            sender: "history",
-        };
-        view?.webview.postMessage(message);
+        view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
 }
 //# sourceMappingURL=extension.js.map

@@ -12,7 +12,6 @@ interface UserData {
   history: Conversation[];
 }
 interface Conversation {
-  primaryQuestion?: string;
   messages: MessageContent[];
 }
 interface SavedState {

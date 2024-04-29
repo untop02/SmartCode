@@ -272,11 +272,8 @@ function getHistory(view: vscode.WebviewView | undefined): void {
       console.error("Error parsing JSON:", parseError);
       return;
     }
-    createMessage(currentData.history, "history");
-    const message: Message = {
-      content: currentData.history.toReversed(),
-      sender: "history",
-    };
-    view?.webview.postMessage(message);
+    view?.webview.postMessage(
+      createMessage(currentData.history.toReversed(), "history")
+    );
   });
 }
