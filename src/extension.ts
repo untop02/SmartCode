@@ -64,7 +64,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           }
           break;
         case "clear": //emptys chat context for ai api
-          this.history = [this.system_message];
           newConversation(this._view);
           break;
         case "delete": //emptys chat context for ai api
@@ -75,7 +74,9 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           getHistory(this._view);
           break;
         case "context":
-          console.log(message.index);
+          this.history = switchContext(message.index, this.history);
+          this.history.unshift(this.system_message);
+          console.log("new history", JSON.stringify(this.history));
           break;
       }
     });
@@ -235,7 +236,7 @@ function updateHistory(
       content: usrInput,
     };
     const system: MessageContent = {
-      role: "system",
+      role: "assistant",
       content: answer,
     };
     const messages: MessageContent[] = [...conversation.messages, user, system];
@@ -292,4 +293,20 @@ function getHistory(view: vscode.WebviewView | undefined): void {
       createMessage(currentData.history.toReversed(), "history")
     );
   });
+}
+
+function switchContext(
+  index: number,
+  history: [MessageContent]
+): [MessageContent] {
+  console.log(`switch Context: ${index}`);
+  const filePath = `${__dirname}/user.json`;
+
+  const file: UserData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const reversedFile = file.history.toReversed();
+
+  history = [...reversedFile[index].messages.slice(-4)] as [MessageContent];
+  console.log(`switch History: ${JSON.stringify(history)}`);
+
+  return history;
 }

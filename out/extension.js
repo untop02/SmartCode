@@ -71,7 +71,6 @@ class SmartCodeProvider {
                     }
                     break;
                 case "clear": //emptys chat context for ai api
-                    this.history = [this.system_message];
                     newConversation(this._view);
                     break;
                 case "delete": //emptys chat context for ai api
@@ -82,7 +81,9 @@ class SmartCodeProvider {
                     getHistory(this._view);
                     break;
                 case "context":
-                    console.log(message.index);
+                    this.history = switchContext(message.index, this.history);
+                    this.history.unshift(this.system_message);
+                    console.log("new history", JSON.stringify(this.history));
                     break;
             }
         });
@@ -205,7 +206,7 @@ function updateHistory(usrInput, answer, conversationIndex) {
             content: usrInput,
         };
         const system = {
-            role: "system",
+            role: "assistant",
             content: answer,
         };
         const messages = [...conversation.messages, user, system];
@@ -250,5 +251,14 @@ function getHistory(view) {
         }
         view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
+}
+function switchContext(index, history) {
+    console.log(`switch Context: ${index}`);
+    const filePath = `${__dirname}/user.json`;
+    const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    const reversedFile = file.history.toReversed();
+    history = [...reversedFile[index].messages.slice(-4)];
+    console.log(`switch History: ${JSON.stringify(history)}`);
+    return history;
 }
 //# sourceMappingURL=extension.js.map
