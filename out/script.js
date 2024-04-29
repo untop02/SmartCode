@@ -71,25 +71,28 @@ clearButton?.addEventListener("click", () => {
 });
 copyButton?.addEventListener("click", () => setClipboard(textP1?.textContent ?? ""));
 newButton?.addEventListener("click", () => {
+    const defaultButt = document.getElementById("0");
     if (globalState.story.length !== 0) {
         const currentState = globalState.currentState;
         vscode.postMessage({ command: "clear" });
-        const button = document.createElement("button");
-        button.classList.add("historyButton");
-        button.textContent = "Current";
-        button.id = String(0);
-        button.addEventListener("click", () => {
-            currentState.historyIndex = Number(button.id);
-            setState(currentState);
-            setHistory({ messages: [] });
-        });
-        const children = Array.prototype.slice.call(historyBar?.children);
-        for (const button of children) {
-            if (!Number.isNaN(Number(button.id))) {
-                button.id = String(Number(button.id) + 1);
+        if (defaultButt?.textContent !== "Current") {
+            const button = document.createElement("button");
+            button.classList.add("historyButton");
+            button.textContent = "Current";
+            button.id = String(0);
+            button.addEventListener("click", () => {
+                currentState.historyIndex = Number(button.id);
+                setState(currentState);
+                setHistory({ messages: [] });
+            });
+            const children = Array.prototype.slice.call(historyBar?.children);
+            for (const button of children) {
+                if (!Number.isNaN(Number(button.id))) {
+                    button.id = String(Number(button.id) + 1);
+                }
             }
+            insertAfter(button, newButton);
         }
-        insertAfter(button, newButton);
     }
 });
 async function setClipboard(text) {
@@ -166,6 +169,7 @@ async function updateTextP2(story) {
         button.addEventListener("click", () => {
             const codeBlock = button.previousElementSibling;
             const codeText = codeBlock?.textContent;
+            button.textContent = "Copied";
             setClipboard(codeText ?? "");
         });
     });
@@ -192,6 +196,12 @@ function formatOutput(history, story) {
     }
 }
 function createHistoryButtons(conversations) {
+    const children = Array.prototype.slice.call(historyBar?.children);
+    for (const button of children) {
+        if (!Number.isNaN(Number(button.id))) {
+            button.remove();
+        }
+    }
     const currentState = globalState.currentState;
     if (currentState.historyIndex &&
         conversations.length < currentState.historyIndex) {

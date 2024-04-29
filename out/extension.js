@@ -72,7 +72,7 @@ class SmartCodeProvider {
                     break;
                 case "clear": //emptys chat context for ai api
                     this.history = [this.system_message];
-                    newConversation();
+                    newConversation(this._view);
                     break;
                 case "delete": //emptys chat context for ai api
                     this.history = [this.system_message];
@@ -215,12 +215,13 @@ function updateHistory(usrInput, answer, conversationIndex) {
         currentData.history = reversedHistory.toReversed();
     });
 }
-function newConversation() {
+function newConversation(view) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
         if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
             console.log("Pushing");
             currentData.history.push({ messages: [] });
+            getHistory(view);
         }
     });
 }

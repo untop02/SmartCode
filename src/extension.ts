@@ -65,7 +65,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           break;
         case "clear": //emptys chat context for ai api
           this.history = [this.system_message];
-          newConversation();
+          newConversation(this._view);
           break;
         case "delete": //emptys chat context for ai api
           this.history = [this.system_message];
@@ -248,7 +248,7 @@ function updateHistory(
   });
 }
 
-function newConversation(): void {
+function newConversation(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
@@ -256,8 +256,8 @@ function newConversation(): void {
       currentData.history[currentData.history.length - 1].messages.length !== 0
     ) {
       console.log("Pushing");
-
       currentData.history.push({ messages: [] });
+      getHistory(view);
     }
   });
 }
