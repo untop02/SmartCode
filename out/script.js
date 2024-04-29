@@ -60,7 +60,6 @@ sendButton?.addEventListener("click", () => {
 clearButton?.addEventListener("click", () => {
     clearHistory();
 });
-copyButton?.addEventListener("click", () => setClipboard(textP1?.textContent ?? ""));
 async function setClipboard(text) {
     const type = "text/plain";
     const blob = new Blob([text], { type });
@@ -98,7 +97,7 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "stream": {
-                textP1.textContent = data.content; // The JSON data our extension sent;
+                updateTextP1(data.content);
                 break;
             }
             case "complete": {
@@ -122,17 +121,36 @@ window?.addEventListener("message", (event) => {
 });
 async function updateTextP2(story) {
     const markedContent = await marked.parse(story.map((code) => `${code}`).join("\n"));
+    console.log("marked", markedContent);
     if (textP2) {
-        textP2.innerHTML = markedContent;
+        const regex = new RegExp(`</pre>`, 'g');
+        const out = markedContent.replace(regex, '</pre> <button class="copy-button">Copy</button>');
+        textP2.innerHTML = out;
+    }
+    if (textP1) {
+        textP1.innerHTML = "";
+    }
+    document.querySelectorAll('.copy-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const codeBlock = button.previousElementSibling;
+            const codeText = codeBlock?.textContent;
+            setClipboard(codeText ?? "");
+        });
+    });
+}
+async function updateTextP1(story) {
+    const markedContent = await marked.parse(story);
+    if (textP1) {
+        textP1.innerHTML = markedContent;
     }
 }
 function formatOutput(history, story) {
     for (const message of history) {
         if (message.role === "user") {
-            story.unshift(`${message.content}`);
+            story.unshift(`<div class="user">YOU: ${message.content}</div>`);
         }
         else {
-            story.unshift(message.content);
+            story.unshift(`${message.content}`);
         }
         updateTextP2(story);
     }

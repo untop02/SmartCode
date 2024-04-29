@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="${styleUri}">
-        <title>Smart Code</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="${styleUri}">
+    <title>Smart Code</title>
+</head>
 
-    <body>
-        <script>
-            const vscode = acquireVsCodeApi();
-            const exports = {};
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/marked"></script>
-        <header>
-            <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
-        </header>
-        <div id="flex-container">
-            <div id="history">
-                <button id="newChat">New chat</button>
-                <button id="clearChat">Clear all chats</button>
-            </div>
-            <div id="chat-container">
-                <div id="loader"></div>
-                <p id='p1'></p>
-                <p id='p2'></p>
-            </div>
+<body>
+    <script>
+        const vscode = acquireVsCodeApi();
+        const exports = {};
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked"></script>
+    <header>
+        <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
+    </header>
+    <div id="flex-container">
+        <div id="history">
+            <button id="newChat">New chat</button>
+            <button id="clearChat">Clear all chats</button>
         </div>
-        <div id="footer">
-            <div class="input-container">
-                <button id="sendButton">ASK</button>
-                <textarea type="text" id="uInput" placeholder="Ask SmartCode..." rows="5"></textarea>
-                <button id="sendButton">ASK</button>
-            </div>
+        <div id="chat-container">
+            <div id="loader"></div>
+            <div id='p1'></div>
+            <div id='p2'></div>
         </div>
-        <script src="${scriptUri}"></script>
-    </body>
+    </div>
+    <div id="footer">
+        <div class="input-container">
+            <textarea type="text" id="uInput" placeholder="Ask SmartCode..." rows="5"></textarea>
+            <button id="sendButton">ASK</button>
+        </div>
+    </div>
+    <script src="${scriptUri}"></script>
+</body>
 
 </html>

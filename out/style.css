@@ -29,13 +29,34 @@ header {
   margin: 8px;
   flex-grow: 2;
   display: flex;
-  align-items: center;
   flex-direction: column;
 }
 
-#chat-container > .loader {
+#chat-container>#loader {
   margin-top: 8px;
+  align-self: center
 }
+
+#chat-container>div>.user {
+  color: #c4b2b2;
+  margin-top: 2px;
+  border: gray;
+  border-style: solid;
+  margin-bottom: 4px;
+}
+
+.copy-button {
+  background-color: #676967;
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 8px;
+  cursor: pointer;
+}
+
 
 #history {
   max-width: 160px;
@@ -46,7 +67,7 @@ header {
   border-style: solid;
 }
 
-#history > button {
+#history>button {
   cursor: pointer;
   width: 100%;
   background-color: transparent;
@@ -59,11 +80,11 @@ header {
   transition-duration: 0.4s;
 }
 
-#history > button:hover {
+#history>button:hover {
   background-color: #303030;
 }
 
-#history > #clearChat {
+#history>#clearChat {
   color: red;
 }
 
