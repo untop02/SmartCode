@@ -3,7 +3,7 @@ name: CI/CD with VSCE
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -21,7 +21,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Publish VSIX
-        env:
-          VSCE_PAT: ${{ secrets.AZURE_TOKEN }} # Personal Access Token for VSCE
-        run: npx vsce package --out Smart_Code.vsix -p $VSCE_PAT
+      - name: Authenticate with VSCE
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.AZURE_TOKEN }}" > ~/.npmrc
+
+      - name: Package VSIX
+        run: npx vsce package --out Smart_Code.vsix
