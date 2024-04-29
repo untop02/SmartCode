@@ -80,6 +80,8 @@ class SmartCodeProvider {
                 case "context":
                     console.log(message.index);
                     this.history = switchContext(message.index, this.history);
+                    console.log(`HELP ME :${JSON.stringify(this.history)}`);
+                    console.log(`HELP ME :${JSON.stringify(this.history.length)}`);
                     break;
             }
         });
@@ -251,13 +253,14 @@ function switchContext(index, history) {
         let currentData;
         try {
             currentData = JSON.parse(data);
-            const lastTwo = currentData.history[index].messages.slice(-2);
-            if (history.length >= 3) {
-                for (let index = 0; index < 2; index++) {
-                    history.pop();
-                }
+            // Reverse the history array and get the last two messages from the specified index
+            const reversedHistory = [...currentData.history].toReversed();
+            const lastTwo = reversedHistory[index].messages.slice(-2);
+            // Concatenate the new messages to original history
+            for (const item of lastTwo) {
+                history.push(item);
             }
-            history.push(...lastTwo);
+            console.log(lastTwo);
             console.log(history.length);
         }
         catch (parseError) {
