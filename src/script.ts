@@ -73,8 +73,6 @@ sendButton?.addEventListener("click", () => {
 clearButton?.addEventListener("click", () => {
   clearHistory();
 });
-<<<<<<< Updated upstream
-=======
 
 copyButton?.addEventListener("click", () =>
   setClipboard(textP1?.textContent ?? "")
@@ -105,7 +103,6 @@ newButton?.addEventListener("click", () => {
   }
 });
 
->>>>>>> Stashed changes
 async function setClipboard(text: string): Promise<void> {
   const type = "text/plain";
   const blob = new Blob([text], { type });
@@ -181,15 +178,18 @@ async function updateTextP2(story: string[]) {
   );
   console.log("marked", markedContent);
   if (textP2) {
-    const regex = new RegExp(`</pre>`, 'g');
-    const out = markedContent.replace(regex, '</pre> <button class="copy-button">Copy</button>');
+    const regex = /<\/pre>/g;
+    const out = markedContent.replace(
+      regex,
+      '</pre> <button class="copy-button">Copy</button>'
+    );
     textP2.innerHTML = out;
   }
   if (textP1) {
     textP1.innerHTML = "";
   }
-  document.querySelectorAll('.copy-button').forEach(button => {
-    button.addEventListener('click', () => {
+  document.querySelectorAll(".copy-button").forEach((button) => {
+    button.addEventListener("click", () => {
       const codeBlock = button.previousElementSibling;
       const codeText = codeBlock?.textContent;
       setClipboard(codeText ?? "");
