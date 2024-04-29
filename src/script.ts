@@ -174,7 +174,7 @@ function createHistoryButtons(conversations: Conversation[]): void {
       setState(currentState);
       setHistory(conversation);
     });
-    historyBar?.appendChild(button);
+    historyBar?.insertBefore(button, historyBar.lastElementChild);
   });
 }
 

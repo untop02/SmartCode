@@ -152,7 +152,7 @@ function createHistoryButtons(conversations) {
             setState(currentState);
             setHistory(conversation);
         });
-        historyBar?.appendChild(button);
+        historyBar?.insertBefore(button, historyBar.lastElementChild);
     });
 }
 document.addEventListener("DOMContentLoaded", () => {
