@@ -26,7 +26,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   system_message: MessageContent = {
     //how how the language model acts
@@ -67,15 +67,14 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this.history = [this.system_message];
           newConversation(this._view);
           break;
-        case "delete": //emptys chat context for ai api
-          this.history = [this.system_message];
-          deleteHistory(this._view);
-          break;
         case "history":
           getHistory(this._view);
           break;
         case "context":
           console.log(message.index);
+          this.history = switchContext(message.index, this.history);
+          console.log(`HELP ME :${JSON.stringify(this.history)}`);
+          console.log(`HELP ME :${JSON.stringify(this.history.length)}`);
           break;
       }
     });
@@ -118,7 +117,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         updateHistory(usrInput.content, new_message.content, conversationIndex);
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
         this._view?.webview.postMessage(
-          createMessage([usrInput, new_message], "complete")
+          createMessage(this.history, "complete")
         );
         this._view?.webview.postMessage(
           createMessage("hideSpinner", "spinner")
@@ -262,18 +261,6 @@ function newConversation(view: vscode.WebviewView | undefined): void {
   });
 }
 
-function deleteHistory(view: vscode.WebviewView | undefined): void {
-  const filePath: string = `${__dirname}/user.json`;
-
-  readWriteData(filePath, (currentData: UserData) => {
-    currentData.history.length = 0;
-    currentData.history.push({ messages: [] });
-    getHistory(view);
-  });
-}
-
-
-
 function getHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
   fs.readFile(filePath, "utf8", (err, data) => {
@@ -292,4 +279,42 @@ function getHistory(view: vscode.WebviewView | undefined): void {
       createMessage(currentData.history.toReversed(), "history")
     );
   });
+}
+
+function switchContext(
+  index: number,
+  history: [MessageContent]
+): [MessageContent] {
+  console.log(`switch Context: ${index}`);
+  const filePath = `${__dirname}/user.json`;
+
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading file:", err);
+      return;
+    }
+
+    let currentData: UserData;
+    try {
+      currentData = JSON.parse(data);
+
+      // Reverse the history array and get the last two messages from the specified index
+      const reversedHistory = [...currentData.history].toReversed();
+      const lastTwo = reversedHistory[index].messages.slice(-2);
+
+      // Concatenate the new messages to original history
+      for (const item of lastTwo) {
+        history.push(item);
+      }
+
+      console.log(lastTwo);
+      console.log(history.length);
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return;
+    }
+  });
+  console.log(`switch History: ${JSON.stringify(history)}`);
+
+  return history;
 }

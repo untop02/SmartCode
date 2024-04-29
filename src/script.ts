@@ -253,6 +253,7 @@ function createHistoryButtons(conversations: Conversation[]): void {
     button.addEventListener("click", () => {
       currentState.historyIndex = Number(button.id);
       console.log(`button.id: ${button.id} story ${globalState.story}`);
+      vscode.postMessage({ command: "context", index: button.id });
       setState(currentState);
       setHistory(conversation);
       vscode.postMessage({ command: "clear" });

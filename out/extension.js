@@ -74,15 +74,12 @@ class SmartCodeProvider {
                     this.history = [this.system_message];
                     newConversation(this._view);
                     break;
-                case "delete": //emptys chat context for ai api
-                    this.history = [this.system_message];
-                    deleteHistory(this._view);
-                    break;
                 case "history":
                     getHistory(this._view);
                     break;
                 case "context":
                     console.log(message.index);
+                    this.history = switchContext(message.index, this.history);
                     break;
             }
         });
@@ -118,7 +115,7 @@ class SmartCodeProvider {
                 }
                 updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage(createMessage([usrInput, new_message], "complete"));
+                this._view?.webview.postMessage(createMessage(this.history, "complete"));
                 this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
@@ -225,14 +222,6 @@ function newConversation(view) {
         }
     });
 }
-function deleteHistory(view) {
-    const filePath = `${__dirname}/user.json`;
-    readWriteData(filePath, (currentData) => {
-        currentData.history.length = 0;
-        currentData.history.push({ messages: [] });
-        getHistory(view);
-    });
-}
 function getHistory(view) {
     const filePath = `${__dirname}/user.json`;
     fs.readFile(filePath, "utf8", (err, data) => {
@@ -250,5 +239,33 @@ function getHistory(view) {
         }
         view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
+}
+function switchContext(index, history) {
+    console.log(`switch Context: ${index}`);
+    const filePath = `${__dirname}/user.json`;
+    fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+            console.error("Error reading file:", err);
+            return;
+        }
+        let currentData;
+        try {
+            currentData = JSON.parse(data);
+            const lastTwo = currentData.history[index].messages.slice(-2);
+            if (history.length >= 3) {
+                for (let index = 0; index < 2; index++) {
+                    history.pop();
+                }
+            }
+            history.push(...lastTwo);
+            console.log(history.length);
+        }
+        catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return;
+        }
+    });
+    console.log(`switch History: ${JSON.stringify(history)}`);
+    return history;
 }
 //# sourceMappingURL=extension.js.map
