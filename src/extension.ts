@@ -262,7 +262,6 @@ function getHistory(view: vscode.WebviewView | undefined): void {
       console.error("Error reading file:", err);
       return;
     }
-
     let currentData: UserData;
     try {
       currentData = JSON.parse(data);

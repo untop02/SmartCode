@@ -145,7 +145,6 @@ async function updateTextP2(story: string[]) {
     story.map((code) => `${code}`).join("\n")
   );
   if (textP2) {
-    console.log("daContent", markedContent);
     textP2.innerHTML = markedContent;
   }
 }
@@ -158,11 +157,18 @@ function formatOutput(history: Conversation["messages"], story: string[]) {
     }
     updateTextP2(story);
   }
-  console.log(history);
 }
 
 function createHistoryButtons(conversations: Conversation[]): void {
   const currentState = globalState.currentState;
+
+  if (
+    globalState.currentState.historyIndex &&
+    conversations.length < globalState.currentState.historyIndex
+  ) {
+    globalState.currentState.historyIndex = 0;
+  }
+
   conversations.forEach((conversation, index) => {
     const firstQuestion = conversation.messages[0];
     const button = document.createElement("button");

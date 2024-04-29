@@ -123,7 +123,6 @@ window?.addEventListener("message", (event) => {
 async function updateTextP2(story) {
     const markedContent = await marked.parse(story.map((code) => `${code}`).join("\n"));
     if (textP2) {
-        console.log("daContent", markedContent);
         textP2.innerHTML = markedContent;
     }
 }
@@ -137,10 +136,13 @@ function formatOutput(history, story) {
         }
         updateTextP2(story);
     }
-    console.log(history);
 }
 function createHistoryButtons(conversations) {
     const currentState = globalState.currentState;
+    if (globalState.currentState.historyIndex &&
+        conversations.length < globalState.currentState.historyIndex) {
+        globalState.currentState.historyIndex = 0;
+    }
     conversations.forEach((conversation, index) => {
         const firstQuestion = conversation.messages[0];
         const button = document.createElement("button");
