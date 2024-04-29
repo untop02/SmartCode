@@ -16,27 +16,24 @@
         <script src="https://cdn.jsdelivr.net/npm/marked"></script>
         <header>
             <img src="https://i.imgur.com/kycO1SS.gif" alt="" srcset="" width="300">
-            <div class="scroll">
-                <p id='p1'>This is where I will reply</p>
-                <p id='p2'></p>
-            </div>
         </header>
-        <div class="chat-container">
-            <h1><!-- Chat content goes here --></h1>
-        </div>
-        <footer>
-            <div class="footer-container">
-                <div id="loadingSpinner" class="loader"></div>
-                <div class="input-container">
-                    <input type="text" id="uInput" placeholder="Ask SmartCode..."></input>
-                </div>
-                <div class="button-container">
-                    <button type="button" id="sendButton">Send</button>
-                    <button type="button" id="clearButton">Reset</button>
-                    <button type="button" id="copyButton">Copy</button>
-                </div>
+        <div id="flex-container">
+            <div id="history">
+                <button id="newChat">New chat</button>
+                <button id="clearChat">Clear all chats</button>
             </div>
-        </footer>
+            <div id="chat-container">
+                <div id="loader"></div>
+                <div id='p1'></div>
+                <div id='p2'></div>
+            </div>
+        </div>
+        <div id="footer">
+            <div class="input-container">
+                <textarea type="text" id="uInput" placeholder="Ask SmartCode..." rows="5"></textarea>
+                <button id="sendButton">ASK</button>
+            </div>
+        </div>
         <script src="${scriptUri}"></script>
     </body>
 

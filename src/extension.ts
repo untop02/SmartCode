@@ -5,8 +5,6 @@ import type { ChatCompletionMessageParam } from "../node_modules/openai/resource
 import uuid4 from "uuid4";
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Congratulations, your extension "Smart Code" is now active!');
-
   const provider = new SmartCodeProvider(context.extensionUri);
 
   context.subscriptions.push(
@@ -51,16 +49,12 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    const consoleChannel = vscode.window.createOutputChannel("Console");
-
     webviewView.webview.html = this.getWebContent(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage((message) => {
-      // If lauseen sisään??
-      consoleChannel.append(message);
       switch (message.command) {
-        case "alert":
-          this.api(message.text);
+        case "ask":
+          this.api(message.text, message.index);
           if (
             message.text &&
             message.text.length > 0 &&
@@ -76,6 +70,9 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         case "history":
           getHistory(this._view);
           break;
+        case "context":
+          console.log(message.index);
+          break;
       }
     });
   }
@@ -85,10 +82,11 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     apiKey: getUUID(),
   });
   private prevInput = "";
-  async api(input: string) {
+  async api(input: string, conversationIndex: number) {
+    console.log(this.history);
     if (input !== "" && input !== this.prevInput) {
       this.prevInput = input; //saves input for check to prevent spam
-      const usrInput = { role: "user", content: input };
+      const usrInput: MessageContent = { role: "user", content: input };
       this.history.push(usrInput); //model reads first user role content starting from end of array
       try {
         this._view?.webview.postMessage(
@@ -113,15 +111,14 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             ); //streams reply to html
           }
         }
-        updateHistory(usrInput.content, new_message.content);
+        updateHistory(usrInput.content, new_message.content, conversationIndex);
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-        this._view?.webview.postMessage(
-          createMessage("hideSpinner", "spinner")
-        );
         this._view?.webview.postMessage(
           createMessage(this.history, "complete")
         );
-
+        this._view?.webview.postMessage(
+          createMessage("hideSpinner", "spinner")
+        );
         if (this.history.length > 11) {
           //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
           this.history.shift(); //removes system prompt
@@ -159,7 +156,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     return htmlContent;
   }
 }
-export function deactivate() {}
 
 function getUUID(): string {
   const filePath = `${__dirname}/user.json`;
@@ -213,17 +209,23 @@ function readWriteData(
   });
 }
 
-function updateHistory(usrInput: string, answer: string): void {
+function updateHistory(
+  usrInput: string,
+  answer: string,
+  conversationIndex: number
+): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
-    const lastConversation =
-      currentData.history[currentData.history.length - 1];
+    const reversedHistory = currentData.history.toReversed();
 
-    if (!lastConversation) {
+    const conversation: Conversation = reversedHistory[conversationIndex];
+
+    if (!conversation) {
       console.error("No conversation found in search history.");
       return;
     }
+
     const user: MessageContent = {
       role: "user",
       content: usrInput,
@@ -232,15 +234,13 @@ function updateHistory(usrInput: string, answer: string): void {
       role: "system",
       content: answer,
     };
-    const messages: MessageContent[] = [
-      ...lastConversation.messages,
-      user,
-      system,
-    ];
+    const messages: MessageContent[] = [...conversation.messages, user, system];
 
-    currentData.history[currentData.history.length - 1] = {
+    reversedHistory[conversationIndex] = {
       messages,
     };
+
+    currentData.history = reversedHistory.toReversed();
   });
 }
 
@@ -265,7 +265,6 @@ function getHistory(view: vscode.WebviewView | undefined): void {
       console.error("Error reading file:", err);
       return;
     }
-
     let currentData: UserData;
     try {
       currentData = JSON.parse(data);
@@ -273,11 +272,8 @@ function getHistory(view: vscode.WebviewView | undefined): void {
       console.error("Error parsing JSON:", parseError);
       return;
     }
-    createMessage(currentData.history, "history");
-    const message: Message = {
-      content: currentData.history,
-      sender: "history",
-    };
-    view?.webview.postMessage(message);
+    view?.webview.postMessage(
+      createMessage(currentData.history.toReversed(), "history")
+    );
   });
 }

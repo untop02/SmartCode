@@ -26,13 +26,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = void 0;
+exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("node:fs"));
 const index_1 = __importDefault(require("../node_modules/openai/index"));
 const uuid4_1 = __importDefault(require("uuid4"));
 function activate(context) {
-    console.log('Congratulations, your extension "Smart Code" is now active!');
     const provider = new SmartCodeProvider(context.extensionUri);
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SmartCodeProvider.viewType, provider));
     context.subscriptions.push(vscode.commands.registerCommand("smartCode.openView", () => {
@@ -60,14 +59,11 @@ class SmartCodeProvider {
             enableScripts: true,
             localResourceRoots: [this._extensionUri],
         };
-        const consoleChannel = vscode.window.createOutputChannel("Console");
         webviewView.webview.html = this.getWebContent(webviewView.webview);
         webviewView.webview.onDidReceiveMessage((message) => {
-            // If lauseen sisään??
-            consoleChannel.append(message);
             switch (message.command) {
-                case "alert":
-                    this.api(message.text);
+                case "ask":
+                    this.api(message.text, message.index);
                     if (message.text &&
                         message.text.length > 0 &&
                         message.text.trim().length > 0) {
@@ -81,6 +77,9 @@ class SmartCodeProvider {
                 case "history":
                     getHistory(this._view);
                     break;
+                case "context":
+                    console.log(message.index);
+                    break;
             }
         });
     }
@@ -90,7 +89,8 @@ class SmartCodeProvider {
         apiKey: getUUID(),
     });
     prevInput = "";
-    async api(input) {
+    async api(input, conversationIndex) {
+        console.log(this.history);
         if (input !== "" && input !== this.prevInput) {
             this.prevInput = input; //saves input for check to prevent spam
             const usrInput = { role: "user", content: input };
@@ -112,10 +112,10 @@ class SmartCodeProvider {
                         this._view?.webview.postMessage(createMessage(new_message.content, "stream")); //streams reply to html
                     }
                 }
-                updateHistory(usrInput.content, new_message.content);
+                updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 this._view?.webview.postMessage(createMessage(this.history, "complete"));
+                this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
                     this.history.shift(); //removes system prompt
@@ -145,8 +145,6 @@ class SmartCodeProvider {
         return htmlContent;
     }
 }
-function deactivate() { }
-exports.deactivate = deactivate;
 function getUUID() {
     const filePath = `${__dirname}/user.json`;
     let userData;
@@ -189,11 +187,12 @@ function readWriteData(filePath, updateCallback) {
         fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
     });
 }
-function updateHistory(usrInput, answer) {
+function updateHistory(usrInput, answer, conversationIndex) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
-        const lastConversation = currentData.history[currentData.history.length - 1];
-        if (!lastConversation) {
+        const reversedHistory = currentData.history.toReversed();
+        const conversation = reversedHistory[conversationIndex];
+        if (!conversation) {
             console.error("No conversation found in search history.");
             return;
         }
@@ -205,14 +204,11 @@ function updateHistory(usrInput, answer) {
             role: "system",
             content: answer,
         };
-        const messages = [
-            ...lastConversation.messages,
-            user,
-            system,
-        ];
-        currentData.history[currentData.history.length - 1] = {
+        const messages = [...conversation.messages, user, system];
+        reversedHistory[conversationIndex] = {
             messages,
         };
+        currentData.history = reversedHistory.toReversed();
     });
 }
 function newConversation() {
@@ -239,12 +235,7 @@ function getHistory(view) {
             console.error("Error parsing JSON:", parseError);
             return;
         }
-        createMessage(currentData.history, "history");
-        const message = {
-            content: currentData.history,
-            sender: "history",
-        };
-        view?.webview.postMessage(message);
+        view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
 }
 //# sourceMappingURL=extension.js.map
