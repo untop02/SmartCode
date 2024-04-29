@@ -227,7 +227,6 @@ function newConversation() {
 function deleteHistory(view) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
-        console.log("Murder");
         currentData.history.length = 0;
         currentData.history.push({ messages: [] });
         getHistory(view);

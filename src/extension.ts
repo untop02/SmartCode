@@ -266,9 +266,6 @@ function deleteHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
-
-    console.log("Murder");
-
     currentData.history.length = 0;
     currentData.history.push({ messages: [] });
     getHistory(view);
