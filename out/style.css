@@ -33,10 +33,9 @@ header {
   flex-direction: column;
 }
 
-#chat-container>.loader {
+#chat-container > .loader {
   margin-top: 8px;
 }
-
 
 #history {
   max-width: 160px;
@@ -47,7 +46,7 @@ header {
   border-style: solid;
 }
 
-#history>button {
+#history > button {
   cursor: pointer;
   width: 100%;
   background-color: transparent;
@@ -60,11 +59,11 @@ header {
   transition-duration: 0.4s;
 }
 
-#history>button:hover {
+#history > button:hover {
   background-color: #303030;
 }
 
-#history>#clearChat {
+#history > #clearChat {
   color: red;
 }
 
@@ -72,7 +71,6 @@ header {
   position: fixed;
   bottom: 0;
   width: 100%;
-
 }
 
 .input-container {
@@ -107,7 +105,7 @@ img {
   right: 16px;
 }
 
-.loader {
+#loader {
   display: none;
   border: 4px solid white;
   /* Light grey */

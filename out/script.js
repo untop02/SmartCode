@@ -6,7 +6,7 @@ const inputField = document.getElementById("uInput");
 const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
-const spinner = document.getElementById("loadingSpinner");
+const spinner = document.getElementById("loader");
 const historyBar = document.getElementById("history");
 const globalState = {
     currentState: {
@@ -49,14 +49,10 @@ function sendMessage() {
 }
 function clearHistory() {
     vscode.postMessage({ command: "clear" });
-    if (textP1) {
-        textP1.textContent = '';
+    if (textP1 && textP2) {
+        textP1.textContent = "";
+        textP2.textContent = "";
     }
-    ;
-    if (textP2) {
-        textP2.textContent = '';
-    }
-    ;
 }
 sendButton?.addEventListener("click", () => {
     sendMessage();
@@ -86,7 +82,6 @@ document?.addEventListener("keypress", (event) => {
 window?.addEventListener("message", (event) => {
     const currentState = globalState.currentState;
     const data = event.data;
-    console.log(event.origin);
     if (textP1 && spinner) {
         switch (data.sender) {
             case "history": {
@@ -107,6 +102,7 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "complete": {
+                console.log("BRR");
                 //history: [{ role: string; content: string; }]
                 const history = data.content;
                 history.shift();
@@ -125,9 +121,9 @@ window?.addEventListener("message", (event) => {
     }
 });
 async function updateTextP2(story) {
-    const markedContent = await marked.parse(story.map((code) => `${code}`).join('\n'));
+    const markedContent = await marked.parse(story.map((code) => `${code}`).join("\n"));
     if (textP2) {
-        console.log('daContent', markedContent);
+        console.log("daContent", markedContent);
         textP2.innerHTML = markedContent;
     }
 }
