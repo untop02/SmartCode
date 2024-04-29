@@ -31,7 +31,7 @@ function setState(newState) {
     globalState.currentState = newState;
 }
 function initializeState() {
-    globalState.currentState = getState() ?? globalState.currentState;
+    globalState.currentState = getState() || globalState.currentState;
     vscode.postMessage({ command: "history" });
 }
 function setHistory(conversation) {

@@ -35,8 +35,7 @@ function setState(newState: SavedState): void {
 }
 
 function initializeState(): void {
-  globalState.currentState = getState() ?? globalState.currentState;
-
+  globalState.currentState = getState() || globalState.currentState;
   vscode.postMessage({ command: "history" });
 }
 
