@@ -123,6 +123,8 @@ img {
   position: absolute;
   bottom: 16px;
   right: 16px;
+  color: whitesmoke;
+  background-color: #303030;
 }
 
 #loader {
