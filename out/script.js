@@ -220,6 +220,7 @@ function createHistoryButtons(conversations) {
             console.log(`button.id: ${button.id} story ${globalState.story}`);
             setState(currentState);
             setHistory(conversation);
+            vscode.postMessage({ command: "clear" });
         });
         historyBar?.insertBefore(button, historyBar.lastElementChild);
     });
