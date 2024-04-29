@@ -245,29 +245,9 @@ function getHistory(view) {
 function switchContext(index, history) {
     console.log(`switch Context: ${index}`);
     const filePath = `${__dirname}/user.json`;
-    fs.readFile(filePath, "utf8", (err, data) => {
-        if (err) {
-            console.error("Error reading file:", err);
-            return;
-        }
-        let currentData;
-        try {
-            currentData = JSON.parse(data);
-            // Reverse the history array and get the last two messages from the specified index
-            const reversedHistory = [...currentData.history].toReversed();
-            const lastTwo = reversedHistory[index].messages.slice(-2);
-            // Concatenate the new messages to original history
-            for (const item of lastTwo) {
-                history.push(item);
-            }
-            console.log(lastTwo);
-            console.log(history.length);
-        }
-        catch (parseError) {
-            console.error("Error parsing JSON:", parseError);
-            return;
-        }
-    });
+    const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    const reversedFile = file.history.toReversed();
+    history.push(...reversedFile[index].messages.slice(-2));
     console.log(`switch History: ${JSON.stringify(history)}`);
     return history;
 }
