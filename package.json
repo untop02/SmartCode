@@ -9,7 +9,8 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+  "onView:smartCode.codeView!seen"],
   "main": "./out/extension.js",
   "contributes": {
     "views": {
@@ -17,7 +18,7 @@
         {
           "type": "webview",
           "id": "smartCode.codeView",
-          "name": ""
+          "name": "Smart Code"
         }
       ]
     },
@@ -40,7 +41,7 @@
           "type": "webview",
           "id": "smart-code",
           "title": "Smart Code",
-          "icon": "$(snake)"
+          "icon": "cooltext456997901512876.png"
         }
       ]
     }
@@ -69,5 +70,9 @@
     "marked": "^12.0.1",
     "openai": "^4.31.0",
     "uuid4": "^2.0.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/untop02/SmartCode"
   }
 }
