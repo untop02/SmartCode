@@ -116,6 +116,9 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         this._view?.webview.postMessage(
           createMessage(this.history, "complete")
         );
+        this._view?.webview.postMessage(
+          createMessage("hideSpinner", "spinner")
+        );
         if (this.history.length > 11) {
           //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
           this.history.shift(); //removes system prompt

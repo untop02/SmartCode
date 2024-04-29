@@ -163,8 +163,8 @@ function createHistoryButtons(conversations: Conversation[]): void {
   const currentState = globalState.currentState;
 
   if (
-    globalState.currentState.historyIndex &&
-    conversations.length < globalState.currentState.historyIndex
+    currentState.historyIndex &&
+    conversations.length < currentState.historyIndex
   ) {
     globalState.currentState.historyIndex = 0;
   }

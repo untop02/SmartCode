@@ -139,8 +139,8 @@ function formatOutput(history, story) {
 }
 function createHistoryButtons(conversations) {
     const currentState = globalState.currentState;
-    if (globalState.currentState.historyIndex &&
-        conversations.length < globalState.currentState.historyIndex) {
+    if (currentState.historyIndex &&
+        conversations.length < currentState.historyIndex) {
         globalState.currentState.historyIndex = 0;
     }
     conversations.forEach((conversation, index) => {
