@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearChat");
 const inputField = document.getElementById("uInput");
-const copyButton = document.getElementById("copyButton");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loader");
@@ -36,7 +35,6 @@ function initializeState() {
 }
 function setHistory(conversation) {
     globalState.clearStory();
-    console.log(globalState.story);
     formatOutput(conversation.messages, globalState.story);
 }
 function sendMessage() {
@@ -47,7 +45,6 @@ function sendMessage() {
         index: conversationIndex,
     });
     inputField.value = "";
-    console.log(globalState.currentState.historyIndex);
 }
 function clearHistory() {
     vscode.postMessage({ command: "delete" });
@@ -69,7 +66,6 @@ sendButton?.addEventListener("click", () => {
 clearButton?.addEventListener("click", () => {
     clearHistory();
 });
-copyButton?.addEventListener("click", () => setClipboard(textP1?.textContent ?? ""));
 newButton?.addEventListener("click", () => {
     const defaultButt = document.getElementById("0");
     if (globalState.story.length !== 0) {
@@ -181,7 +177,6 @@ async function updateTextP1(story) {
     }
 }
 function formatOutput(history, story) {
-    console.log(`History in format: ${history.length}`);
     if (textP2 && history.length === 0) {
         textP2.innerHTML = "";
     }
@@ -208,7 +203,6 @@ function createHistoryButtons(conversations) {
         globalState.currentState.historyIndex = 0;
     }
     conversations.forEach((conversation, index) => {
-        console.log(conversation);
         const firstQuestion = conversation.messages[0];
         const button = document.createElement("button");
         button.classList.add("historyButton");
@@ -217,7 +211,6 @@ function createHistoryButtons(conversations) {
             firstQuestion !== undefined ? firstQuestion.content : "Current";
         button.addEventListener("click", () => {
             currentState.historyIndex = Number(button.id);
-            console.log(`button.id: ${button.id} story ${globalState.story}`);
             setState(currentState);
             setHistory(conversation);
             vscode.postMessage({ command: "context", index: button.id });

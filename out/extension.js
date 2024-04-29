@@ -52,7 +52,7 @@ class SmartCodeProvider {
         content: "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
     };
     history = [this.system_message];
-    ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
+    ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located
     resolveWebviewView(webviewView, _context, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
@@ -83,7 +83,6 @@ class SmartCodeProvider {
                 case "context":
                     this.history = switchContext(message.index, this.history);
                     this.history.unshift(this.system_message);
-                    console.log("new history", JSON.stringify(this.history));
                     break;
             }
         });
@@ -95,7 +94,6 @@ class SmartCodeProvider {
     });
     prevInput = "";
     async api(input, conversationIndex) {
-        console.log(this.history);
         if (input !== "" && input !== this.prevInput) {
             this.prevInput = input; //saves input for check to prevent spam
             const usrInput = { role: "user", content: input };
@@ -130,14 +128,13 @@ class SmartCodeProvider {
                 }
             }
             catch (error) {
-                console.log(error);
+                console.log("ERROR", error);
                 vscode.window.showInformationMessage("Failed to connect");
             }
         }
         else {
             vscode.window.showInformationMessage("Invalid input, please try again");
         }
-        console.log("This is history", this.history);
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
@@ -220,7 +217,6 @@ function newConversation(view) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
         if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
-            console.log("Pushing");
             currentData.history.push({ messages: [] });
             getHistory(view);
         }
@@ -253,12 +249,10 @@ function getHistory(view) {
     });
 }
 function switchContext(index, history) {
-    console.log(`switch Context: ${index}`);
     const filePath = `${__dirname}/user.json`;
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
     history = [...reversedFile[index].messages.slice(-4)];
-    console.log(`switch History: ${JSON.stringify(history)}`);
     return history;
 }
 //# sourceMappingURL=extension.js.map

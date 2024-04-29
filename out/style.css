@@ -33,7 +33,6 @@ header {
 
 #chat-container>#loader {
   margin-top: 8px;
-  align-self: center
 }
 
 #chat-container>div>.user {

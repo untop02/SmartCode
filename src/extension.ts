@@ -35,7 +35,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.",
   };
   history: [MessageContent] = [this.system_message];
-  ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located, POST commands are accepted
+  ai_url = "http://koodikeisarit.ddns.net:1234/v1"; //domain where ai api is located
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -76,7 +76,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         case "context":
           this.history = switchContext(message.index, this.history);
           this.history.unshift(this.system_message);
-          console.log("new history", JSON.stringify(this.history));
           break;
       }
     });
@@ -88,7 +87,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   });
   private prevInput = "";
   async api(input: string, conversationIndex: number) {
-    console.log(this.history);
     if (input !== "" && input !== this.prevInput) {
       this.prevInput = input; //saves input for check to prevent spam
       const usrInput: MessageContent = { role: "user", content: input };
@@ -132,13 +130,12 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           this.history.unshift(this.system_message); //inserts system prompt to start of array
         }
       } catch (error) {
-        console.log(error);
+        console.log("ERROR", error);
         vscode.window.showInformationMessage("Failed to connect");
       }
     } else {
       vscode.window.showInformationMessage("Invalid input, please try again");
     }
-    console.log("This is history", this.history);
   }
 
   private getWebContent(webview: vscode.Webview): string {
@@ -256,7 +253,6 @@ function newConversation(view: vscode.WebviewView | undefined): void {
     if (
       currentData.history[currentData.history.length - 1].messages.length !== 0
     ) {
-      console.log("Pushing");
       currentData.history.push({ messages: [] });
       getHistory(view);
     }
@@ -299,14 +295,12 @@ function switchContext(
   index: number,
   history: [MessageContent]
 ): [MessageContent] {
-  console.log(`switch Context: ${index}`);
   const filePath = `${__dirname}/user.json`;
 
   const file: UserData = JSON.parse(fs.readFileSync(filePath, "utf8"));
   const reversedFile = file.history.toReversed();
 
   history = [...reversedFile[index].messages.slice(-4)] as [MessageContent];
-  console.log(`switch History: ${JSON.stringify(history)}`);
 
   return history;
 }
