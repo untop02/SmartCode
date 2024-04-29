@@ -72,7 +72,11 @@ class SmartCodeProvider {
                     break;
                 case "clear": //emptys chat context for ai api
                     this.history = [this.system_message];
-                    newConversation();
+                    newConversation(this._view);
+                    break;
+                case "delete": //emptys chat context for ai api
+                    this.history = [this.system_message];
+                    deleteHistory(this._view);
                     break;
                 case "history":
                     getHistory(this._view);
@@ -114,7 +118,7 @@ class SmartCodeProvider {
                 }
                 updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage(createMessage(this.history, "complete"));
+                this._view?.webview.postMessage(createMessage([usrInput, new_message], "complete"));
                 this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
@@ -211,13 +215,22 @@ function updateHistory(usrInput, answer, conversationIndex) {
         currentData.history = reversedHistory.toReversed();
     });
 }
-function newConversation() {
+function newConversation(view) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
         if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
             console.log("Pushing");
             currentData.history.push({ messages: [] });
+            getHistory(view);
         }
+    });
+}
+function deleteHistory(view) {
+    const filePath = `${__dirname}/user.json`;
+    readWriteData(filePath, (currentData) => {
+        currentData.history.length = 0;
+        currentData.history.push({ messages: [] });
+        getHistory(view);
     });
 }
 function getHistory(view) {
