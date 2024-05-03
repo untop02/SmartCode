@@ -54,12 +54,7 @@ function clearHistory() {
         textP2.textContent = "";
     }
     globalState.clearStory();
-    const children = Array.prototype.slice.call(historyBar?.children);
-    for (const button of children) {
-        if (!Number.isNaN(Number(button.id))) {
-            button.remove();
-        }
-    }
+    removeExistingButtons();
 }
 sendButton?.addEventListener("click", () => {
     sendMessage();
@@ -120,16 +115,13 @@ window?.addEventListener("message", (event) => {
     if (textP1 && spinner) {
         switch (data.sender) {
             case "history": {
-                // Define a default empty conversation
-                let showedConversation = { messages: [] };
-                // Retrieve conversations from data
                 const conversations = data.content;
-                if (currentState?.historyIndex !== undefined &&
-                    currentState?.historyIndex !== null) {
-                    showedConversation = conversations[currentState.historyIndex];
-                    createHistoryButtons(conversations);
+                const showedConversation = conversations[currentState?.historyIndex ?? 0];
+                createHistoryButtons(conversations);
+                console.log(currentState.historyIndex);
+                if (showedConversation.messages) {
+                    formatOutput(showedConversation.messages);
                 }
-                formatOutput(showedConversation.messages);
                 break;
             }
             case "stream": {
@@ -211,11 +203,8 @@ function setConversationActive() {
     }
 }
 function createHistoryButtons(conversations) {
-    const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
-    for (const button of buttons) {
-        button.remove();
-    }
     const currentState = globalState.currentState;
+    removeExistingButtons();
     if (currentState.historyIndex &&
         conversations.length < currentState.historyIndex) {
         globalState.currentState.historyIndex = 0;
@@ -242,4 +231,11 @@ function createHistoryButtons(conversations) {
 document.addEventListener("DOMContentLoaded", () => {
     initializeState();
 });
+function removeExistingButtons() {
+    const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
+    for (const button of buttons) {
+        button.remove();
+    }
+    globalState.currentState.historyIndex = 0;
+}
 //# sourceMappingURL=script.js.map
