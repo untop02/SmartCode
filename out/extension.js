@@ -73,15 +73,16 @@ class SmartCodeProvider {
                 case "clear": //emptys chat context for ai api
                     newConversation(this._view);
                     break;
-                case "delete": //emptys chat context for ai api
+                case "delete":
                     this.history = [this.system_message];
                     deleteHistory(this._view);
                     break;
                 case "history":
+                    console.log(`theme is ${vscode.window.activeColorTheme.kind}`);
                     getHistory(this._view);
                     break;
                 case "context":
-                    this.history = switchContext(message.index, this.history);
+                    this.history = switchContext(message.index);
                     this.history.unshift(this.system_message);
                     console.log("new history", JSON.stringify(this.history));
                     break;
@@ -252,13 +253,13 @@ function getHistory(view) {
         view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
 }
-function switchContext(index, history) {
+function switchContext(index) {
     console.log(`switch Context: ${index}`);
     const filePath = `${__dirname}/user.json`;
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
-    history = [...reversedFile[index].messages.slice(-4)];
-    console.log(`switch History: ${JSON.stringify(history)}`);
-    return history;
+    const contextHistory = [...reversedFile[index].messages.slice(-4)];
+    console.log(`switch History: ${JSON.stringify(contextHistory)}`);
+    return contextHistory;
 }
 //# sourceMappingURL=extension.js.map

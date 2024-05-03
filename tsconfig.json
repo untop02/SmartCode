@@ -3,7 +3,7 @@
     "module": "NodeNext",
     "target": "ES2022",
     "outDir": "out",
-    "lib": ["ES2022", "dom", "ESNext", "ES6"],
+    "lib": ["ES2022", "dom", "ESNext", "ES6", "DOM.Iterable"],
     "sourceMap": true,
     "rootDir": "src",
     "strict": true,

@@ -26,7 +26,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   system_message: MessageContent = {
     //how how the language model acts
@@ -66,15 +66,16 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         case "clear": //emptys chat context for ai api
           newConversation(this._view);
           break;
-        case "delete": //emptys chat context for ai api
+        case "delete":
           this.history = [this.system_message];
           deleteHistory(this._view);
           break;
         case "history":
+          console.log(`theme is ${vscode.window.activeColorTheme.kind}`);
           getHistory(this._view);
           break;
         case "context":
-          this.history = switchContext(message.index, this.history);
+          this.history = switchContext(message.index);
           this.history.unshift(this.system_message);
           console.log("new history", JSON.stringify(this.history));
           break;
@@ -273,8 +274,6 @@ function deleteHistory(view: vscode.WebviewView | undefined): void {
   });
 }
 
-
-
 function getHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
   fs.readFile(filePath, "utf8", (err, data) => {
@@ -295,18 +294,16 @@ function getHistory(view: vscode.WebviewView | undefined): void {
   });
 }
 
-function switchContext(
-  index: number,
-  history: [MessageContent]
-): [MessageContent] {
+function switchContext(index: number): [MessageContent] {
   console.log(`switch Context: ${index}`);
   const filePath = `${__dirname}/user.json`;
 
   const file: UserData = JSON.parse(fs.readFileSync(filePath, "utf8"));
   const reversedFile = file.history.toReversed();
+  const contextHistory = [...reversedFile[index].messages.slice(-4)] as [
+    MessageContent
+  ];
+  console.log(`switch History: ${JSON.stringify(contextHistory)}`);
 
-  history = [...reversedFile[index].messages.slice(-4)] as [MessageContent];
-  console.log(`switch History: ${JSON.stringify(history)}`);
-
-  return history;
+  return contextHistory;
 }

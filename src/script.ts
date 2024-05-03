@@ -12,7 +12,6 @@ const newButton = document.getElementById("newChat");
 
 const globalState: GlobalState & Story = {
   currentState: {
-    inputText: "",
     historyIndex: 0,
   },
   story: [],
@@ -41,9 +40,7 @@ function initializeState(): void {
 
 function setHistory(conversation: Conversation) {
   globalState.clearStory();
-  console.log(globalState.story);
-
-  formatOutput(conversation.messages, globalState.story);
+  formatOutput(conversation.messages);
 }
 
 function sendMessage(): void {
@@ -85,29 +82,41 @@ copyButton?.addEventListener("click", () =>
 );
 
 newButton?.addEventListener("click", () => {
-  const defaultButt = document.getElementById("0");
-  if (globalState.story.length !== 0) {
-    const currentState = globalState.currentState;
-    vscode.postMessage({ command: "clear" });
-    if (defaultButt?.textContent !== "Current") {
-      const button = document.createElement("button");
-      button.classList.add("historyButton");
-      button.textContent = "Current";
-      button.id = String(0);
-      button.addEventListener("click", () => {
-        currentState.historyIndex = Number(button.id);
-        setState(currentState);
-        setHistory({ messages: [] });
-      });
-      const children = Array.prototype.slice.call(historyBar?.children);
-      for (const button of children) {
-        if (!Number.isNaN(Number(button.id))) {
-          button.id = String(Number(button.id) + 1);
-        }
-      }
-      insertAfter(button, newButton);
-    }
+  if (globalState.story.length === 0) {
+    return;
   }
+
+  const currentState = globalState.currentState;
+  const defaultButton = document.getElementById("0");
+
+  if (!defaultButton || defaultButton.textContent === "Current") {
+    return;
+  }
+
+  vscode.postMessage({ command: "clear" });
+
+  const createHistoryButton = (id: number) => {
+    const button = document.createElement("button");
+    button.classList.add("historyButton");
+    button.textContent = "Current";
+    button.id = String(id);
+    button.addEventListener("click", () => {
+      currentState.historyIndex = Number(button.id);
+      setState(currentState);
+      setHistory({ messages: [] });
+      setConversationActive();
+    });
+    return button;
+  };
+
+  const buttons = document.querySelectorAll<HTMLElement>(
+    ".historyButton, .historyButtonActive"
+  );
+
+  for (const button of buttons) {
+    button.id = String(Number(button.id) + 1);
+  }
+  insertAfter(createHistoryButton(0), newButton);
 });
 
 async function setClipboard(text: string): Promise<void> {
@@ -128,7 +137,6 @@ document?.addEventListener("keypress", (event) => {
   }
 });
 
-// Pieni securty risk pitää korjaa Soon™
 // Handle the message inside the webview
 window?.addEventListener("message", (event) => {
   const currentState = globalState.currentState;
@@ -148,11 +156,9 @@ window?.addEventListener("message", (event) => {
           showedConversation = conversations[currentState.historyIndex];
           createHistoryButtons(conversations);
         }
-
-        formatOutput(showedConversation.messages, globalState.story);
+        formatOutput(showedConversation.messages);
         break;
       }
-
       case "stream": {
         updateTextP1(data.content as string);
         break;
@@ -160,8 +166,7 @@ window?.addEventListener("message", (event) => {
       case "complete": {
         //history: [{ role: string; content: string; }]
         const history = data.content as Conversation["messages"];
-        formatOutput(history, globalState.story);
-
+        formatOutput(history);
         break;
       }
       case "spinner": {
@@ -174,12 +179,12 @@ window?.addEventListener("message", (event) => {
     }
   }
 });
-
 function insertAfter(newNode: Node, referenceNode: Node) {
   referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
 }
 
-async function updateTextP2(story: string[]) {
+async function updateTextP2() {
+  const story = globalState.story;
   const markedContent = await marked.parse(
     story.map((code) => `${code}`).join("\n")
   );
@@ -194,14 +199,15 @@ async function updateTextP2(story: string[]) {
   if (textP1) {
     textP1.innerHTML = "";
   }
-  document.querySelectorAll(".copy-button").forEach((button) => {
+  const buttons = document.querySelectorAll(".copy-button");
+  for (const button of buttons) {
     button.addEventListener("click", () => {
       const codeBlock = button.previousElementSibling;
       const codeText = codeBlock?.textContent;
       button.textContent = "Copied";
       setClipboard(codeText ?? "");
     });
-  });
+  }
 }
 async function updateTextP1(story: string) {
   const markedContent = await marked.parse(story);
@@ -209,8 +215,8 @@ async function updateTextP1(story: string) {
     textP1.innerHTML = markedContent;
   }
 }
-function formatOutput(history: Conversation["messages"], story: string[]) {
-  console.log(`History in format: ${history.length}`);
+function formatOutput(history: Conversation["messages"]) {
+  const story = globalState.story;
   if (textP2 && history.length === 0) {
     textP2.innerHTML = "";
   }
@@ -220,16 +226,30 @@ function formatOutput(history: Conversation["messages"], story: string[]) {
     } else {
       story.unshift(`${message.content}`);
     }
-    updateTextP2(story);
+    updateTextP2();
+  }
+}
+
+function setConversationActive() {
+  const buttons = document.querySelectorAll<HTMLElement>(
+    ".historyButton, .historyButtonActive"
+  );
+  const index = globalState.currentState.historyIndex as number;
+  for (const button of buttons) {
+    if (Number(button.id) === index) {
+      button.className = "historyButtonActive";
+    } else {
+      button.className = "historyButton";
+    }
   }
 }
 
 function createHistoryButtons(conversations: Conversation[]): void {
-  const children = Array.prototype.slice.call(historyBar?.children);
-  for (const button of children) {
-    if (!Number.isNaN(Number(button.id))) {
-      button.remove();
-    }
+  const buttons = document.querySelectorAll<HTMLElement>(
+    ".historyButton, .historyButtonActive"
+  );
+  for (const button of buttons) {
+    button.remove();
   }
   const currentState = globalState.currentState;
 
@@ -241,8 +261,6 @@ function createHistoryButtons(conversations: Conversation[]): void {
   }
 
   conversations.forEach((conversation, index) => {
-    console.log(conversation);
-
     const firstQuestion = conversation.messages[0];
     const button = document.createElement("button");
     button.classList.add("historyButton");
@@ -252,23 +270,17 @@ function createHistoryButtons(conversations: Conversation[]): void {
       firstQuestion !== undefined ? firstQuestion.content : "Current";
     button.addEventListener("click", () => {
       currentState.historyIndex = Number(button.id);
-      console.log(`button.id: ${button.id} story ${globalState.story}`);
       setState(currentState);
       setHistory(conversation);
+      setConversationActive();
       vscode.postMessage({ command: "context", index: button.id });
       vscode.postMessage({ command: "clear" });
     });
     historyBar?.insertBefore(button, historyBar.lastElementChild);
   });
+  setConversationActive();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();
-});
-
-document.getElementById("uInput")?.addEventListener("change", () => {
-  const inputText = inputField.value;
-  const currentState = globalState.currentState;
-  currentState.inputText = inputText;
-  setState(currentState);
 });

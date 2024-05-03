@@ -31,12 +31,12 @@ header {
   flex-direction: column;
 }
 
-#chat-container>#loader {
+#chat-container > #loader {
   margin-top: 8px;
-  align-self: center
+  align-self: center;
 }
 
-#chat-container>div>.user {
+#chat-container > div > .user {
   color: #c4b2b2;
   margin-top: 4px;
   border: gray;
@@ -56,6 +56,9 @@ header {
   cursor: pointer;
 }
 
+.historyButtonActive {
+  background-color: red;
+}
 
 #history {
   min-width: 96px;
@@ -66,10 +69,9 @@ header {
   border-style: solid;
 }
 
-#history>button {
+#history > button {
   cursor: pointer;
   width: 100%;
-  background-color: transparent;
   text-align: center;
   color: white;
   border: none;
@@ -79,12 +81,15 @@ header {
   transition-duration: 0.4s;
   max-height: 96px;
 }
+#history > button:not(.historyButtonActive) {
+  background-color: transparent;
+}
 
-#history>button:hover {
+#history > button:hover:not(.historyButtonActive) {
   background-color: #303030;
 }
 
-#history>#clearChat {
+#history > #clearChat {
   color: red;
 }
 
