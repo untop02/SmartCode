@@ -67,7 +67,7 @@ header {
 }
 
 #history {
-  min-width: 160px;
+  min-width: 91px;
   max-width: 160px;
   margin: 8px;
   border: transparent;
@@ -218,5 +218,17 @@ img {
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media screen and (min-width: 470px) {
+  #history {
+    min-width: 160px;
+    max-width: 160px;
+  }
+}
+@media screen and (max-width: 300px) {
+  #history {
+    display: none;
   }
 }

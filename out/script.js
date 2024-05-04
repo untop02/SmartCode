@@ -128,7 +128,6 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "complete": {
-                //history: [{ role: string; content: string; }]
                 const history = data.content;
                 formatOutput(history);
                 break;
@@ -235,11 +234,12 @@ function removeExistingButtons() {
     }
     globalState.currentState.historyIndex = 0;
 }
-inputField.addEventListener("input", (event) => {
-    const offset = inputField.offsetHeight - inputField.clientHeight;
-    //inputField.style.height = `${inputField.scrollHeight + offset}px`;
-});
 document.addEventListener("DOMContentLoaded", () => {
     initializeState();
 });
+window.addEventListener("resize", logViewportWidth);
+function logViewportWidth() {
+    // Log the current viewport width
+    console.log(`Viewport width is: ${window.innerWidth}px`);
+}
 //# sourceMappingURL=script.js.map
