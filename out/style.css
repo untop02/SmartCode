@@ -94,13 +94,7 @@ header {
   max-height: 96px;
 }
 
-.vscode-light #history > button:not(.historyButtonActive),
-.vscode-high-contrast-light.vscode-high-contrast
-  #history
-  > button:not(.historyButtonActive) {
-  background-color: transparent;
-}
-
+/*For lightmode*/
 .vscode-light #history > button:hover:not(.historyButtonActive),
 .vscode-high-contrast-light.vscode-high-contrast
   #history
@@ -123,14 +117,14 @@ header {
   max-height: 96px;
 }
 
-.vscode-dark #history > button:not(.historyButtonActive),
-.vscode-high-contrast #history > button:not(.historyButtonActive) {
-  background-color: transparent;
-}
-
+/*For darkmode*/
 .vscode-dark #history > button:hover:not(.historyButtonActive),
 .vscode-high-contrast #history > button:hover:not(.historyButtonActive) {
   background-color: #303030;
+}
+
+#history > button:not(.historyButtonActive) {
+  background-color: transparent;
 }
 
 #history > #clearChat {
@@ -182,6 +176,7 @@ img {
   padding: 12px 35px 0 10px;
 }
 
+/*for lightmode*/
 .vscode-light #sendButton,
 .vscode-high-contrast-light.vscode-high-contrast #sendButton {
   position: absolute;
@@ -190,6 +185,7 @@ img {
   fill: rgb(116, 114, 114);
 }
 
+/*for darkmode*/
 .vscode-dark #sendButton,
 .vscode-high-contrast #sendButton {
   position: absolute;
