@@ -27,7 +27,6 @@ interface Story {
   story: string[];
   clearStory(): void;
 }
-
 interface Vscode {
   postMessage(message: object): void;
 }

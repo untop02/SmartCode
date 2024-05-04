@@ -71,7 +71,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           deleteHistory(this._view);
           break;
         case "history":
-          console.log(`theme is ${vscode.window.activeColorTheme.kind}`);
           getHistory(this._view);
           break;
         case "context":

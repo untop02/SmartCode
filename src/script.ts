@@ -143,8 +143,7 @@ window?.addEventListener("message", (event) => {
         const showedConversation =
           conversations[currentState?.historyIndex ?? 0];
         createHistoryButtons(conversations);
-        console.log(currentState.historyIndex);
-        if (showedConversation.messages) {
+        if (showedConversation?.messages) {
           formatOutput(showedConversation.messages);
         }
         break;
@@ -165,6 +164,7 @@ window?.addEventListener("message", (event) => {
         } else {
           spinner.style.display = "block";
         }
+        break;
       }
     }
   }
@@ -269,6 +269,7 @@ function createHistoryButtons(conversations: Conversation[]): void {
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();
 });
+
 function removeExistingButtons() {
   const buttons = document.querySelectorAll<HTMLElement>(
     ".historyButton, .historyButtonActive"

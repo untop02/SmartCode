@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  background-color: #1f1f1f;
+  /*background-color: #1f1f1f;*/
 }
 
 /*Tämä aiheuttaa ne merkit jos maalaa ruudun*/
@@ -56,10 +56,6 @@ header {
   cursor: pointer;
 }
 
-.historyButtonActive {
-  background-color: red;
-}
-
 #history {
   min-width: 96px;
   max-width: 160px;
@@ -69,7 +65,39 @@ header {
   border-style: solid;
 }
 
-#history > button {
+.historyButtonActive {
+  background-color: red;
+}
+
+.vscode-light #history > button,
+.vscode-high-contrast-light.vscode-high-contrast #history > button {
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  color: black;
+  border: none;
+  padding: 8px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition-duration: 0.4s;
+  max-height: 96px;
+}
+.vscode-light #history > button:not(.historyButtonActive),
+.vscode-high-contrast-light.vscode-high-contrast
+  #history
+  > button:not(.historyButtonActive) {
+  background-color: transparent;
+}
+
+.vscode-light #history > button:hover:not(.historyButtonActive),
+.vscode-high-contrast-light.vscode-high-contrast
+  #history
+  > button:hover:not(.historyButtonActive) {
+  background-color: rgba(167, 163, 163, 0.589);
+}
+
+.vscode-dark #history > button,
+.vscode-high-contrast #history > button {
   cursor: pointer;
   width: 100%;
   text-align: center;
@@ -81,11 +109,13 @@ header {
   transition-duration: 0.4s;
   max-height: 96px;
 }
-#history > button:not(.historyButtonActive) {
+.vscode-dark #history > button:not(.historyButtonActive),
+.vscode-high-contrast #history > button:not(.historyButtonActive) {
   background-color: transparent;
 }
 
-#history > button:hover:not(.historyButtonActive) {
+.vscode-dark #history > button:hover:not(.historyButtonActive),
+.vscode-high-contrast #history > button:hover:not(.historyButtonActive) {
   background-color: #303030;
 }
 
@@ -104,7 +134,7 @@ header {
   justify-content: center;
   align-items: center;
   padding: 8px;
-  background-color: #1f1f1f;
+  /*background-color: #1f1f1f;*/
 }
 
 img {
