@@ -212,7 +212,7 @@ function formatOutput(history: Conversation["messages"]) {
   }
   for (const message of history) {
     if (message.role === "user") {
-      story.unshift(`<div class="user">YOU: ${message.content}</div>`);
+      story.unshift(`<div class="user"><b>YOU: ${message.content}</b></div>`);
     } else {
       story.unshift(`${message.content}`);
     }
@@ -266,10 +266,6 @@ function createHistoryButtons(conversations: Conversation[]): void {
   setConversationActive();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initializeState();
-});
-
 function removeExistingButtons() {
   const buttons = document.querySelectorAll<HTMLElement>(
     ".historyButton, .historyButtonActive"
@@ -279,3 +275,12 @@ function removeExistingButtons() {
   }
   globalState.currentState.historyIndex = 0;
 }
+
+inputField.addEventListener("input", (event) => {
+  const offset = inputField.offsetHeight - inputField.clientHeight;
+  //inputField.style.height = `${inputField.scrollHeight + offset}px`;
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  initializeState();
+});

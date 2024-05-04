@@ -4,10 +4,8 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  /*background-color: #1f1f1f;*/
 }
 
-/*Tämä aiheuttaa ne merkit jos maalaa ruudun*/
 header {
   display: block;
   width: 100%;
@@ -36,8 +34,20 @@ header {
   align-self: center;
 }
 
-#chat-container > div > .user {
-  color: #c4b2b2;
+/*For lightmode*/
+.vscode-light #chat-container > div > .user,
+.vscode-high-contrast-light.vscode-high-contrast #chat-container > div > .user {
+  color: #ad1212;
+  margin-top: 4px;
+  border: gray;
+  border-style: solid;
+  margin-bottom: 32px;
+}
+
+/*For Darkmode*/
+.vscode-dark #chat-container > div > .user,
+.vscode-high-contrast #chat-container > div > .user {
+  color: #ff1d1d;
   margin-top: 4px;
   border: gray;
   border-style: solid;
@@ -57,7 +67,7 @@ header {
 }
 
 #history {
-  min-width: 96px;
+  min-width: 160px;
   max-width: 160px;
   margin: 8px;
   border: transparent;
@@ -69,6 +79,7 @@ header {
   background-color: red;
 }
 
+/*For lightmode*/
 .vscode-light #history > button,
 .vscode-high-contrast-light.vscode-high-contrast #history > button {
   cursor: pointer;
@@ -82,6 +93,7 @@ header {
   transition-duration: 0.4s;
   max-height: 96px;
 }
+
 .vscode-light #history > button:not(.historyButtonActive),
 .vscode-high-contrast-light.vscode-high-contrast
   #history
@@ -96,6 +108,7 @@ header {
   background-color: rgba(167, 163, 163, 0.589);
 }
 
+/*For darkmode*/
 .vscode-dark #history > button,
 .vscode-high-contrast #history > button {
   cursor: pointer;
@@ -109,6 +122,7 @@ header {
   transition-duration: 0.4s;
   max-height: 96px;
 }
+
 .vscode-dark #history > button:not(.historyButtonActive),
 .vscode-high-contrast #history > button:not(.historyButtonActive) {
   background-color: transparent;
@@ -134,7 +148,6 @@ header {
   justify-content: center;
   align-items: center;
   padding: 8px;
-  /*background-color: #1f1f1f;*/
 }
 
 img {
@@ -144,8 +157,21 @@ img {
   margin-top: -24px;
   margin-bottom: -24px;
 }
-
-#uInput {
+/*for lightmode*/
+.vscode-light #uInput,
+.vscode-high-contrast-light.vscode-high-contrast #uInput {
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  border-style: solid;
+  min-height: fit-content;
+  color: black;
+  resize: none;
+  padding: 12px 35px 0 10px;
+}
+/*for darkmode*/
+.vscode-dark #uInput,
+.vscode-high-contrast #uInput {
   width: 100%;
   background-color: #252525;
   border-radius: 8px;
@@ -153,12 +179,28 @@ img {
   min-height: fit-content;
   color: white;
   resize: none;
+  padding: 12px 35px 0 10px;
 }
 
-#sendButton {
+.vscode-light #sendButton,
+.vscode-high-contrast-light.vscode-high-contrast #sendButton {
   position: absolute;
   bottom: 16px;
   right: 16px;
+  fill: rgb(116, 114, 114);
+}
+
+.vscode-dark #sendButton,
+.vscode-high-contrast #sendButton {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  fill: white;
+}
+
+#sendButton:hover,
+.vscode-high-contrast-light.vscode-high-contrast #sendButton:hover {
+  fill: red;
 }
 
 #loader {

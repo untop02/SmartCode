@@ -76,7 +76,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         case "context":
           this.history = switchContext(message.index);
           this.history.unshift(this.system_message);
-          console.log("new history", JSON.stringify(this.history));
           break;
       }
     });
@@ -88,7 +87,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   });
   private prevInput = "";
   async api(input: string, conversationIndex: number) {
-    console.log(this.history);
     if (input !== "" && input !== this.prevInput) {
       this.prevInput = input; //saves input for check to prevent spam
       const usrInput: MessageContent = { role: "user", content: input };
@@ -138,7 +136,6 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     } else {
       vscode.window.showInformationMessage("Invalid input, please try again");
     }
-    console.log("This is history", this.history);
   }
 
   private getWebContent(webview: vscode.Webview): string {
@@ -294,7 +291,6 @@ function getHistory(view: vscode.WebviewView | undefined): void {
 }
 
 function switchContext(index: number): [MessageContent] {
-  console.log(`switch Context: ${index}`);
   const filePath = `${__dirname}/user.json`;
 
   const file: UserData = JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -302,7 +298,6 @@ function switchContext(index: number): [MessageContent] {
   const contextHistory = [...reversedFile[index].messages.slice(-4)] as [
     MessageContent
   ];
-  console.log(`switch History: ${JSON.stringify(contextHistory)}`);
 
   return contextHistory;
 }

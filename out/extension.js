@@ -83,7 +83,6 @@ class SmartCodeProvider {
                 case "context":
                     this.history = switchContext(message.index);
                     this.history.unshift(this.system_message);
-                    console.log("new history", JSON.stringify(this.history));
                     break;
             }
         });
@@ -95,7 +94,6 @@ class SmartCodeProvider {
     });
     prevInput = "";
     async api(input, conversationIndex) {
-        console.log(this.history);
         if (input !== "" && input !== this.prevInput) {
             this.prevInput = input; //saves input for check to prevent spam
             const usrInput = { role: "user", content: input };
@@ -137,7 +135,6 @@ class SmartCodeProvider {
         else {
             vscode.window.showInformationMessage("Invalid input, please try again");
         }
-        console.log("This is history", this.history);
     }
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
@@ -253,12 +250,10 @@ function getHistory(view) {
     });
 }
 function switchContext(index) {
-    console.log(`switch Context: ${index}`);
     const filePath = `${__dirname}/user.json`;
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
     const contextHistory = [...reversedFile[index].messages.slice(-4)];
-    console.log(`switch History: ${JSON.stringify(contextHistory)}`);
     return contextHistory;
 }
 //# sourceMappingURL=extension.js.map

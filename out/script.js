@@ -182,7 +182,7 @@ function formatOutput(history) {
     }
     for (const message of history) {
         if (message.role === "user") {
-            story.unshift(`<div class="user">YOU: ${message.content}</div>`);
+            story.unshift(`<div class="user"><b>YOU: ${message.content}</b></div>`);
         }
         else {
             story.unshift(`${message.content}`);
@@ -228,9 +228,6 @@ function createHistoryButtons(conversations) {
     });
     setConversationActive();
 }
-document.addEventListener("DOMContentLoaded", () => {
-    initializeState();
-});
 function removeExistingButtons() {
     const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
     for (const button of buttons) {
@@ -238,4 +235,11 @@ function removeExistingButtons() {
     }
     globalState.currentState.historyIndex = 0;
 }
+inputField.addEventListener("input", (event) => {
+    const offset = inputField.offsetHeight - inputField.clientHeight;
+    //inputField.style.height = `${inputField.scrollHeight + offset}px`;
+});
+document.addEventListener("DOMContentLoaded", () => {
+    initializeState();
+});
 //# sourceMappingURL=script.js.map
