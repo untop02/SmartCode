@@ -278,9 +278,3 @@ function removeExistingButtons() {
 document.addEventListener("DOMContentLoaded", () => {
   initializeState();
 });
-
-window.addEventListener("resize", logViewportWidth);
-function logViewportWidth() {
-  // Log the current viewport width
-  console.log(`Viewport width is: ${window.innerWidth}px`);
-}
