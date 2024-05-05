@@ -34,3 +34,59 @@ Smart Code is meant to connect to your own LLM server, so that your code never l
 
 10. **Start Using the Extension**:
     - Now you can start using the extension and enjoy its features within Visual Studio Code!
+
+    
+# Packaging Your Repository into a VSIX File using VSCE
+
+This guide will walk you through the process of packaging our repository's files into a VSIX file using VSCE (Visual Studio Code Extensions).
+
+## Installation
+
+If you haven't installed `vsce` globally yet, you can do so using npm:
+
+```bash
+npm install -g vsce
+```
+
+## Packaging Your Extension
+
+1. **Clone the Smart Code repository:**
+
+   ```bash
+   git clone https://github.com/untop02/SmartCode
+   ```
+
+2. **Navigate into your repository's directory:**
+
+   ```bash
+   cd filepath
+   ```
+
+3. **Ensure all necessary files for your extension are in place.**
+
+4. **Update the `package.json` file:**
+
+   Ensure that the `name`, `version`, and other necessary fields are correctly set in your `package.json`.
+
+5. **Package your extension using `vsce`:**
+
+   Run the following command to package your extension:
+
+   ```bash
+   vsce package
+   ```
+
+   This command will create a `.vsix` file in the root directory of your directory.
+
+6. **Congratulations!**
+
+   Your extension is now packaged into a VSIX file and is ready for distribution.
+
+## Resources
+
+- [VS Code Extension Guidelines](https://code.visualstudio.com/api)
+- [VSCE Documentation](https://github.com/microsoft/vscode-vsce)
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
