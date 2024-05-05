@@ -28,7 +28,7 @@ jobs:
         run: npx vsce package --out dist/Smart_Code.vsix
 
       - name: Generate Changelog
-        run: npx conventional-changelog -p angular -i CHANGELOG.md -s -r 0
+        run: npx auto-changelog -p -o CHANGELOG.md
 
       - name: Commit files
         run: |
