@@ -26,7 +26,10 @@ jobs:
 
       - name: Package VSIX
         run: npx vsce package --out dist/Smart_Code.vsix
-        
+
+      - name: Generate Changelog
+        run: npx auto-changelog --output CHANGELOG.md
+
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
