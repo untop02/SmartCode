@@ -26,3 +26,9 @@ jobs:
 
       - name: Package VSIX
         run: npx vsce package --out dist/Smart_Code.vsix
+        
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
