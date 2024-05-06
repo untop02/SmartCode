@@ -151,7 +151,6 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "complete": {
-                const currentState = globalState.currentState;
                 const history = data.content;
                 const conversation = currentState.storedConversations[data.index];
                 conversation.messages.push(...history);

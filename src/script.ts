@@ -180,7 +180,6 @@ window?.addEventListener("message", (event) => {
         break;
       }
       case "complete": {
-        const currentState = globalState.currentState;
         const history = data.content as Conversation["messages"];
 
         const conversation =
