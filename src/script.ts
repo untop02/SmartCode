@@ -36,7 +36,6 @@ function setState(newState: SavedState): void {
 /**
  * Sets the state based on the saved state in localStorage.
  */
-
 function initializeState(): void {
   const spinnerState = localStorage.getItem("spinnerState");
   globalState.currentState = getState() || globalState.currentState;

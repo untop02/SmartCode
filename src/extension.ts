@@ -80,6 +80,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
       }
     });
   }
+
   private openai = new OpenAI({
     //using openAi library to handle communication
     baseURL: this.ai_url,
