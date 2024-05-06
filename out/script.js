@@ -31,8 +31,16 @@ function setState(newState) {
     globalState.currentState = newState;
 }
 function initializeState() {
+    const spinnerState = localStorage.getItem("spinnerState");
     globalState.currentState = getState() || globalState.currentState;
     vscode.postMessage({ command: "history" });
+    vscode.postMessage({
+        command: "context",
+        index: globalState.currentState.historyIndex,
+    });
+    if (spinner && spinnerState) {
+        spinner.style.display = spinnerState;
+    }
 }
 function setHistory(conversation) {
     globalState.clearStory();
@@ -87,8 +95,10 @@ newButton?.addEventListener("click", () => {
         button.addEventListener("click", () => {
             currentState.historyIndex = Number(button.id);
             setState(currentState);
-            setHistory({ messages: [] });
+            const clickedConversation = currentState.storedConversations[Number(button.id)];
+            setHistory(clickedConversation);
             setConversationActive();
+            vscode.postMessage({ command: "context", index: button.id });
         });
         return button;
     };
@@ -97,6 +107,11 @@ newButton?.addEventListener("click", () => {
         button.id = String(Number(button.id) + 1);
     }
     insertAfter(createHistoryButton(0), newButton);
+    const newConversation = {
+        messages: [],
+    };
+    currentState.storedConversations.unshift(newConversation);
+    console.log(currentState.storedConversations);
 });
 async function setClipboard(text) {
     const type = "text/plain";
@@ -130,25 +145,31 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "stream": {
-                updateTextP1(data.content);
+                if (data.index === globalState.currentState.historyIndex) {
+                    updateTextP1(data.content);
+                }
                 break;
             }
             case "complete": {
                 const currentState = globalState.currentState;
                 const history = data.content;
-                if (data.index && currentState.storedConversations[data.index]) {
-                    const conversation = currentState.storedConversations[data.index];
-                    conversation.messages.push(...history);
+                const conversation = currentState.storedConversations[data.index];
+                conversation.messages.push(...history);
+                if (data.index === globalState.currentState.historyIndex) {
+                    formatOutput(history);
                 }
-                formatOutput(history);
                 break;
             }
             case "spinner": {
                 if (data.content === "hideSpinner") {
                     spinner.style.display = "none";
+                    newButton.disabled = false;
+                    localStorage.setItem("spinnerState", "none");
                 }
                 else {
                     spinner.style.display = "block";
+                    newButton.disabled = true;
+                    localStorage.setItem("spinnerState", "block");
                 }
                 break;
             }
@@ -192,7 +213,7 @@ function formatOutput(history) {
     }
     for (const message of history) {
         if (message.role === "user") {
-            story.unshift(`<div class="user"><b>YOU: ${message.content}</b></div>`);
+            story.unshift(`<div class="user">YOU: ${message.content}</div>`);
         }
         else {
             story.unshift(`${message.content}`);

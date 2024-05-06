@@ -64,7 +64,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           }
           break;
         case "newConversation":
-          newConversation(this._view);
+          newConversation();
           break;
         case "delete": //emptys chat context for ai api
           this.history = [this.system_message];
@@ -110,7 +110,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           if (chunk.choices[0].delta.content) {
             new_message.content += chunk.choices[0].delta.content;
             this._view?.webview.postMessage(
-              createMessage(new_message.content, "stream")
+              createMessage(new_message.content, "stream", conversationIndex)
             ); //streams reply to html
           }
         }
@@ -248,7 +248,7 @@ function updateHistory(
   });
 }
 
-function newConversation(view: vscode.WebviewView | undefined): void {
+function newConversation(): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
@@ -257,7 +257,6 @@ function newConversation(view: vscode.WebviewView | undefined): void {
     ) {
       console.log("Pushing");
       currentData.history.push({ messages: [] });
-      getHistory(view);
     }
   });
 }
@@ -300,6 +299,7 @@ function switchContext(index: number): [MessageContent] {
   const contextHistory = [...reversedFile[index].messages.slice(-4)] as [
     MessageContent
   ];
+  console.log(contextHistory);
 
   return contextHistory;
 }

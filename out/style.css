@@ -37,7 +37,7 @@ header {
 /*For lightmode*/
 .vscode-light #chat-container > div > .user,
 .vscode-high-contrast-light.vscode-high-contrast #chat-container > div > .user {
-  color: #ad1212;
+  color: #000000;
   margin-top: 4px;
   border: gray;
   border-style: solid;
@@ -47,11 +47,12 @@ header {
 /*For Darkmode*/
 .vscode-dark #chat-container > div > .user,
 .vscode-high-contrast #chat-container > div > .user {
-  color: #ff1d1d;
+  color: #ffffff;
   margin-top: 4px;
   border: gray;
   border-style: solid;
   margin-bottom: 32px;
+  padding: 5px;
 }
 
 .copy-button {
@@ -79,13 +80,11 @@ header {
   background-color: red;
 }
 
-/*For lightmode*/
-.vscode-light #history > button,
-.vscode-high-contrast-light.vscode-high-contrast #history > button {
+/* Common styles */
+#history > button {
   cursor: pointer;
   width: 100%;
   text-align: center;
-  color: black;
   border: none;
   padding: 8px;
   text-overflow: ellipsis;
@@ -94,30 +93,30 @@ header {
   max-height: 96px;
 }
 
-/*For lightmode*/
-.vscode-light #history > button:hover:not(.historyButtonActive),
-.vscode-high-contrast-light.vscode-high-contrast
-  #history
-  > button:hover:not(.historyButtonActive) {
+#history > button:hover:not(.historyButtonActive) {
   background-color: rgba(167, 163, 163, 0.589);
 }
 
-/*For darkmode*/
-.vscode-dark #history > button,
-.vscode-high-contrast #history > button {
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-  color: white;
-  border: none;
-  padding: 8px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  transition-duration: 0.4s;
-  max-height: 96px;
+/* Disabled button styles for all themes */
+#newChat > button:disabled {
+  color: gray;
 }
 
-/*For darkmode*/
+/* Light mode styles */
+.vscode-light #history > button:not(:disabled),
+.vscode-high-contrast-light.vscode-high-contrast
+  #history
+  > button:not(:disabled) {
+  color: black;
+}
+
+/* Dark mode styles */
+.vscode-dark #history > button:not(:disabled),
+.vscode-high-contrast #history > button:not(:disabled) {
+  color: white;
+}
+
+/* Dark mode styles */
 .vscode-dark #history > button:hover:not(.historyButtonActive),
 .vscode-high-contrast #history > button:hover:not(.historyButtonActive) {
   background-color: #303030;
@@ -151,46 +150,45 @@ img {
   margin-top: -24px;
   margin-bottom: -24px;
 }
-/*for lightmode*/
-.vscode-light #uInput,
-.vscode-high-contrast-light.vscode-high-contrast #uInput {
+/* Common styles */
+#uInput {
   width: 100%;
-  background-color: white;
   border-radius: 8px;
   border-style: solid;
   min-height: fit-content;
-  color: black;
-  resize: none;
-  padding: 12px 35px 0 10px;
-}
-/*for darkmode*/
-.vscode-dark #uInput,
-.vscode-high-contrast #uInput {
-  width: 100%;
-  background-color: #252525;
-  border-radius: 8px;
-  border-style: solid;
-  min-height: fit-content;
-  color: white;
   resize: none;
   padding: 12px 35px 0 10px;
 }
 
-/*for lightmode*/
-.vscode-light #sendButton,
-.vscode-high-contrast-light.vscode-high-contrast #sendButton {
+#sendButton {
   position: absolute;
   bottom: 16px;
   right: 16px;
+}
+
+/* Light mode styles */
+.vscode-light #uInput,
+.vscode-high-contrast-light.vscode-high-contrast #uInput {
+  background-color: white;
+  color: black;
+}
+
+/* Light mode styles */
+.vscode-light #sendButton,
+.vscode-high-contrast-light.vscode-high-contrast #sendButton {
   fill: rgb(116, 114, 114);
 }
 
-/*for darkmode*/
+/* Dark mode styles */
+.vscode-dark #uInput,
+.vscode-high-contrast #uInput {
+  background-color: #252525;
+  color: white;
+}
+
+/* Dark mode styles */
 .vscode-dark #sendButton,
 .vscode-high-contrast #sendButton {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
   fill: white;
 }
 

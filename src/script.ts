@@ -8,7 +8,7 @@ const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loader");
 const historyBar = document.getElementById("history");
-const newButton = document.getElementById("newChat");
+const newButton = document.getElementById("newChat") as HTMLButtonElement;
 
 const globalState: GlobalState & Story = {
   currentState: {
@@ -35,8 +35,16 @@ function setState(newState: SavedState): void {
 }
 
 function initializeState(): void {
+  const spinnerState = localStorage.getItem("spinnerState");
   globalState.currentState = getState() || globalState.currentState;
   vscode.postMessage({ command: "history" });
+  vscode.postMessage({
+    command: "context",
+    index: globalState.currentState.historyIndex,
+  });
+  if (spinner && spinnerState) {
+    spinner.style.display = spinnerState;
+  }
 }
 
 function setHistory(conversation: Conversation) {
@@ -107,8 +115,11 @@ newButton?.addEventListener("click", () => {
     button.addEventListener("click", () => {
       currentState.historyIndex = Number(button.id);
       setState(currentState);
-      setHistory({ messages: [] });
+      const clickedConversation =
+        currentState.storedConversations[Number(button.id)];
+      setHistory(clickedConversation);
       setConversationActive();
+      vscode.postMessage({ command: "context", index: button.id });
     });
     return button;
   };
@@ -121,6 +132,11 @@ newButton?.addEventListener("click", () => {
     button.id = String(Number(button.id) + 1);
   }
   insertAfter(createHistoryButton(0), newButton);
+  const newConversation: Conversation = {
+    messages: [],
+  };
+  currentState.storedConversations.unshift(newConversation);
+  console.log(currentState.storedConversations);
 });
 
 async function setClipboard(text: string): Promise<void> {
@@ -158,25 +174,33 @@ window?.addEventListener("message", (event) => {
         break;
       }
       case "stream": {
-        updateTextP1(data.content as string);
+        if (data.index === globalState.currentState.historyIndex) {
+          updateTextP1(data.content as string);
+        }
         break;
       }
       case "complete": {
         const currentState = globalState.currentState;
         const history = data.content as Conversation["messages"];
 
-        if (data.index && currentState.storedConversations[data.index]) {
-          const conversation = currentState.storedConversations[data.index];
-          conversation.messages.push(...history);
+        const conversation =
+          currentState.storedConversations[data.index as number];
+        conversation.messages.push(...history);
+
+        if (data.index === globalState.currentState.historyIndex) {
+          formatOutput(history);
         }
-        formatOutput(history);
         break;
       }
       case "spinner": {
         if (data.content === "hideSpinner") {
           spinner.style.display = "none";
+          newButton.disabled = false;
+          localStorage.setItem("spinnerState", "none");
         } else {
           spinner.style.display = "block";
+          newButton.disabled = true;
+          localStorage.setItem("spinnerState", "block");
         }
         break;
       }
@@ -226,7 +250,7 @@ function formatOutput(history: Conversation["messages"]) {
   }
   for (const message of history) {
     if (message.role === "user") {
-      story.unshift(`<div class="user"><b>YOU: ${message.content}</b></div>`);
+      story.unshift(`<div class="user">YOU: ${message.content}</div>`);
     } else {
       story.unshift(`${message.content}`);
     }

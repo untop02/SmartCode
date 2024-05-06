@@ -71,7 +71,7 @@ class SmartCodeProvider {
                     }
                     break;
                 case "newConversation":
-                    newConversation(this._view);
+                    newConversation();
                     break;
                 case "delete": //emptys chat context for ai api
                     this.history = [this.system_message];
@@ -112,7 +112,7 @@ class SmartCodeProvider {
                     //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
-                        this._view?.webview.postMessage(createMessage(new_message.content, "stream")); //streams reply to html
+                        this._view?.webview.postMessage(createMessage(new_message.content, "stream", conversationIndex)); //streams reply to html
                     }
                 }
                 updateHistory(usrInput.content, new_message.content, conversationIndex);
@@ -214,13 +214,12 @@ function updateHistory(usrInput, answer, conversationIndex) {
         currentData.history = reversedHistory.toReversed();
     });
 }
-function newConversation(view) {
+function newConversation() {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
         if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
             console.log("Pushing");
             currentData.history.push({ messages: [] });
-            getHistory(view);
         }
     });
 }
@@ -255,6 +254,7 @@ function switchContext(index) {
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
     const contextHistory = [...reversedFile[index].messages.slice(-4)];
+    console.log(contextHistory);
     return contextHistory;
 }
 //# sourceMappingURL=extension.js.map
