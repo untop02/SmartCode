@@ -29,6 +29,7 @@ header {
   margin: 8px;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 
 #chat-container>#loader {
@@ -57,8 +58,8 @@ header {
 
 
 #history {
-  min-width: 96px;
-  max-width: 160px;
+  width: 160px; /* Fixed width */
+  overflow: auto; /* Enable overflow */
   margin: 8px;
   border: transparent;
   border-right: #303030;
