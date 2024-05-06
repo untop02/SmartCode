@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const sendButton = document.getElementById("sendButton");
 const clearButton = document.getElementById("clearChat");
+const newButton = document.getElementById("newChat");
 const inputField = document.getElementById("uInput");
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loader");
 const historyBar = document.getElementById("history");
-const newButton = document.getElementById("newChat");
 const globalState = {
     currentState: {
         historyIndex: 0,

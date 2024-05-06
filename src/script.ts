@@ -1,13 +1,13 @@
 declare const marked: JSON;
 declare const vscode: Vscode;
-const sendButton = document.getElementById("sendButton");
-const clearButton = document.getElementById("clearChat");
+const sendButton = document.getElementById("sendButton") as HTMLButtonElement;
+const clearButton = document.getElementById("clearChat") as HTMLButtonElement;
+const newButton = document.getElementById("newChat") as HTMLButtonElement;
 const inputField = document.getElementById("uInput") as HTMLInputElement;
 const textP1 = document.getElementById("p1");
 const textP2 = document.getElementById("p2");
 const spinner = document.getElementById("loader");
 const historyBar = document.getElementById("history");
-const newButton = document.getElementById("newChat") as HTMLButtonElement;
 
 const globalState: GlobalState & Story = {
   currentState: {
