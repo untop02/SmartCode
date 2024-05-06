@@ -29,6 +29,9 @@ function setState(newState) {
     localStorage.setItem("smartCodeState", JSON.stringify(newState));
     globalState.currentState = newState;
 }
+/**
+ * Sets the state based on the saved state in localStorage.
+ */
 function initializeState() {
     const spinnerState = localStorage.getItem("spinnerState");
     globalState.currentState = getState() || globalState.currentState;
@@ -45,6 +48,9 @@ function setHistory(conversation) {
     globalState.clearStory();
     formatOutput(conversation.messages);
 }
+/**
+ * Handles sending a message based on the input field value.
+ */
 function sendMessage() {
     const conversationIndex = globalState.currentState.historyIndex;
     vscode.postMessage({
@@ -59,6 +65,9 @@ function sendMessage() {
     }
     inputField.value = "";
 }
+/**
+ * Clears the chat history and resets the state.
+ */
 function clearHistory() {
     vscode.postMessage({ command: "delete" });
     if (textP1 && textP2) {
@@ -66,7 +75,11 @@ function clearHistory() {
         textP2.textContent = "";
     }
     globalState.clearStory();
-    removeExistingButtons();
+    const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
+    for (const button of buttons) {
+        button.remove();
+    }
+    globalState.currentState.historyIndex = 0;
 }
 sendButton?.addEventListener("click", () => {
     sendMessage();
@@ -89,14 +102,7 @@ newButton?.addEventListener("click", () => {
         button.classList.add("historyButton");
         button.textContent = "Current";
         button.id = String(id);
-        button.addEventListener("click", () => {
-            currentState.historyIndex = Number(button.id);
-            setState(currentState);
-            const clickedConversation = currentState.storedConversations[Number(button.id)];
-            setHistory(clickedConversation);
-            setConversationActive();
-            vscode.postMessage({ command: "context", index: button.id });
-        });
+        button.addEventListener("click", handleButtonClick(button));
         return button;
     };
     const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
@@ -110,12 +116,50 @@ newButton?.addEventListener("click", () => {
     currentState.storedConversations.unshift(newConversation);
     console.log(currentState.storedConversations);
 });
+/**
+ * Handles creating a new conversation button.
+ */
+function createHistoryButtons(conversations) {
+    const currentState = globalState.currentState;
+    if (currentState.historyIndex &&
+        conversations.length < currentState.historyIndex) {
+        currentState.historyIndex = 0;
+    }
+    currentState.storedConversations = conversations;
+    for (const [index, conversation] of conversations.entries()) {
+        const firstQuestion = conversation.messages[0];
+        const button = document.createElement("button");
+        button.classList.add("historyButton");
+        button.id = String(index);
+        button.textContent = firstQuestion?.content || "Current";
+        button.addEventListener("click", handleButtonClick(button));
+        historyBar?.insertBefore(button, historyBar.lastElementChild);
+    }
+    setConversationActive();
+}
+/**
+ * Handles the click event of a history button.
+ */
+function handleButtonClick(button) {
+    return () => {
+        const currentState = globalState.currentState;
+        currentState.historyIndex = Number(button.id);
+        setState(currentState);
+        const clickedConversation = currentState.storedConversations[Number(button.id)];
+        setHistory(clickedConversation);
+        setConversationActive();
+        vscode.postMessage({ command: "context", index: button.id });
+    };
+}
 async function setClipboard(text) {
     const type = "text/plain";
     const blob = new Blob([text], { type });
     const data = [new ClipboardItem({ [type]: blob })];
     await navigator.clipboard.write(data);
 }
+/*
+ * Handles keystroke changes.
+ */
 document?.addEventListener("keypress", (event) => {
     if (event.key === "Enter" && event.shiftKey !== true) {
         event.preventDefault();
@@ -157,16 +201,10 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "spinner": {
-                if (data.content === "hideSpinner") {
-                    spinner.style.display = "none";
-                    newButton.disabled = false;
-                    localStorage.setItem("spinnerState", "none");
-                }
-                else {
-                    spinner.style.display = "block";
-                    newButton.disabled = true;
-                    localStorage.setItem("spinnerState", "block");
-                }
+                const displayStyle = data.content === "hideSpinner" ? "none" : "block";
+                spinner.style.display = displayStyle;
+                newButton.disabled = data.content !== "hideSpinner";
+                localStorage.setItem("spinnerState", displayStyle);
                 break;
             }
         }
@@ -175,6 +213,9 @@ window?.addEventListener("message", (event) => {
 function insertAfter(newNode, referenceNode) {
     referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
 }
+/**
+ * Handles updating text in textP2 based on the provided story.
+ */
 async function updateTextP2() {
     const story = globalState.story;
     const markedContent = await marked.parse(story.map((code) => `${code}`).join("\n"));
@@ -196,12 +237,18 @@ async function updateTextP2() {
         });
     }
 }
+/**
+ * Handles updating text in textP1 based on the provided story.
+ */
 async function updateTextP1(story) {
     const markedContent = await marked.parse(story);
     if (textP1) {
         textP1.innerHTML = markedContent;
     }
 }
+/**
+ * Formats and updates the output based on the conversation history.
+ */
 function formatOutput(history) {
     const story = globalState.story;
     if (textP2 && history.length === 0) {
@@ -217,6 +264,9 @@ function formatOutput(history) {
         updateTextP2();
     }
 }
+/**
+ * Sets the active conversation in the UI by applying the active class to the corresponding history button.
+ */
 function setConversationActive() {
     const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
     const index = globalState.currentState.historyIndex;
@@ -229,38 +279,6 @@ function setConversationActive() {
             button.className = "historyButton";
         }
     }
-}
-function createHistoryButtons(conversations) {
-    const currentState = globalState.currentState;
-    if (currentState.historyIndex &&
-        conversations.length < currentState.historyIndex) {
-        currentState.historyIndex = 0;
-    }
-    currentState.storedConversations = conversations;
-    for (const [index, conversation] of conversations.entries()) {
-        const firstQuestion = conversation.messages[0];
-        const button = document.createElement("button");
-        button.classList.add("historyButton");
-        button.id = String(index);
-        button.textContent = firstQuestion?.content || "Current";
-        button.addEventListener("click", () => {
-            currentState.historyIndex = Number(button.id);
-            setState(currentState);
-            const clickedConversation = currentState.storedConversations[Number(button.id)];
-            setHistory(clickedConversation);
-            setConversationActive();
-            vscode.postMessage({ command: "context", index: button.id });
-        });
-        historyBar?.insertBefore(button, historyBar.lastElementChild);
-    }
-    setConversationActive();
-}
-function removeExistingButtons() {
-    const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
-    for (const button of buttons) {
-        button.remove();
-    }
-    globalState.currentState.historyIndex = 0;
 }
 document.addEventListener("DOMContentLoaded", () => {
     initializeState();

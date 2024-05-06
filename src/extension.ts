@@ -138,6 +138,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  // Get HTML content for the webview
   private getWebContent(webview: vscode.Webview): string {
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "out", "style.css")
@@ -159,6 +160,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
   }
 }
 
+// Generate a UUID for the user or retrieve it from a JSON file if it exists
 function getUUID(): string {
   const filePath = `${__dirname}/user.json`;
   let userData: UserData;
@@ -176,6 +178,7 @@ function getUUID(): string {
   return userData.userID;
 }
 
+// Create a message object with specified content, sender, and optional index
 function createMessage(
   response: string | Conversation[] | MessageContent[],
   sender: string,
@@ -189,6 +192,7 @@ function createMessage(
   return message;
 }
 
+// Read data from a JSON file, update it using the provided callback, and write the updated data back to the file
 function readWriteData(
   filePath: string,
   updateCallback: (currentData: UserData) => void
@@ -213,6 +217,7 @@ function readWriteData(
   });
 }
 
+// Update the chat history with user input and AI response for a specific conversation
 function updateHistory(
   usrInput: string,
   answer: string,
@@ -248,6 +253,7 @@ function updateHistory(
   });
 }
 
+// Start a new conversation by adding an empty conversation object to the chat history
 function newConversation(): void {
   const filePath: string = `${__dirname}/user.json`;
 
@@ -260,6 +266,7 @@ function newConversation(): void {
   });
 }
 
+// Delete all chat history by clearing the history array and adding an empty conversation object
 function deleteHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
 
@@ -270,6 +277,7 @@ function deleteHistory(view: vscode.WebviewView | undefined): void {
   });
 }
 
+// Retrieve the chat history from the JSON file and send it to the webview for display
 function getHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
   fs.readFile(filePath, "utf8", (err, data) => {
@@ -290,6 +298,7 @@ function getHistory(view: vscode.WebviewView | undefined): void {
   });
 }
 
+// Retrieve the context history for a specific conversation index
 function switchContext(index: number): [MessageContent] {
   const filePath = `${__dirname}/user.json`;
 
@@ -298,7 +307,6 @@ function switchContext(index: number): [MessageContent] {
   const contextHistory = [...reversedFile[index].messages.slice(-4)] as [
     MessageContent
   ];
-  console.log(contextHistory);
 
   return contextHistory;
 }

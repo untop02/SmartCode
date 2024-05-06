@@ -1,18 +1,18 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function (o, m, k, k2) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-        desc = { enumerable: true, get: function () { return m[k]; } };
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
-}) : (function (o, m, k, k2) {
+}) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function (o, v) {
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
     Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function (o, v) {
+}) : function(o, v) {
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
@@ -136,6 +136,7 @@ class SmartCodeProvider {
             vscode.window.showInformationMessage("Invalid input, please try again");
         }
     }
+    // Get HTML content for the webview
     getWebContent(webview) {
         const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "style.css"));
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "script.js"));
@@ -147,6 +148,7 @@ class SmartCodeProvider {
         return htmlContent;
     }
 }
+// Generate a UUID for the user or retrieve it from a JSON file if it exists
 function getUUID() {
     const filePath = `${__dirname}/user.json`;
     let userData;
@@ -164,6 +166,7 @@ function getUUID() {
     }
     return userData.userID;
 }
+// Create a message object with specified content, sender, and optional index
 function createMessage(response, sender, index) {
     const message = {
         content: response,
@@ -172,6 +175,7 @@ function createMessage(response, sender, index) {
     };
     return message;
 }
+// Read data from a JSON file, update it using the provided callback, and write the updated data back to the file
 function readWriteData(filePath, updateCallback) {
     fs.readFile(filePath, "utf8", (err, data) => {
         if (err) {
@@ -190,6 +194,7 @@ function readWriteData(filePath, updateCallback) {
         fs.writeFileSync(filePath, JSON.stringify(currentData), { flag: "w" });
     });
 }
+// Update the chat history with user input and AI response for a specific conversation
 function updateHistory(usrInput, answer, conversationIndex) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
@@ -214,6 +219,7 @@ function updateHistory(usrInput, answer, conversationIndex) {
         currentData.history = reversedHistory.toReversed();
     });
 }
+// Start a new conversation by adding an empty conversation object to the chat history
 function newConversation() {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
@@ -222,6 +228,7 @@ function newConversation() {
         }
     });
 }
+// Delete all chat history by clearing the history array and adding an empty conversation object
 function deleteHistory(view) {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
@@ -230,6 +237,7 @@ function deleteHistory(view) {
         getHistory(view);
     });
 }
+// Retrieve the chat history from the JSON file and send it to the webview for display
 function getHistory(view) {
     const filePath = `${__dirname}/user.json`;
     fs.readFile(filePath, "utf8", (err, data) => {
@@ -248,12 +256,12 @@ function getHistory(view) {
         view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
 }
+// Retrieve the context history for a specific conversation index
 function switchContext(index) {
     const filePath = `${__dirname}/user.json`;
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
     const contextHistory = [...reversedFile[index].messages.slice(-4)];
-    console.log(contextHistory);
     return contextHistory;
 }
 //# sourceMappingURL=extension.js.map
