@@ -58,11 +58,6 @@ function sendMessage() {
         text: inputField.value,
         index: conversationIndex,
     });
-    const active = document.getElementsByClassName("historyButtonActive")[0];
-    console.log();
-    if (active.innerText === "Current") {
-        active.innerText = inputField.value;
-    }
     inputField.value = "";
 }
 /**
@@ -195,6 +190,11 @@ window?.addEventListener("message", (event) => {
                 const history = data.content;
                 const conversation = currentState.storedConversations[data.index];
                 conversation.messages.push(...history);
+                const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
+                if (buttons[0].innerText === "Current" &&
+                    conversation.messages.length === 2) {
+                    buttons[0].innerText = conversation.messages[0].content;
+                }
                 if (data.index === globalState.currentState.historyIndex) {
                     formatOutput(history);
                 }

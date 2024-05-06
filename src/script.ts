@@ -64,14 +64,6 @@ function sendMessage(): void {
     text: inputField.value,
     index: conversationIndex,
   });
-  const active = document.getElementsByClassName(
-    "historyButtonActive"
-  )[0] as HTMLButtonElement;
-  console.log();
-
-  if (active.innerText === "Current") {
-    active.innerText = inputField.value;
-  }
 
   inputField.value = "";
 }
@@ -231,16 +223,28 @@ window?.addEventListener("message", (event) => {
       }
       case "complete": {
         const history = data.content as Conversation["messages"];
-
         const conversation =
           currentState.storedConversations[data.index as number];
+
         conversation.messages.push(...history);
+
+        const buttons = document.querySelectorAll<HTMLElement>(
+          ".historyButton, .historyButtonActive"
+        );
+
+        if (
+          buttons[0].innerText === "Current" &&
+          conversation.messages.length === 2
+        ) {
+          buttons[0].innerText = conversation.messages[0].content;
+        }
 
         if (data.index === globalState.currentState.historyIndex) {
           formatOutput(history);
         }
         break;
       }
+
       case "spinner": {
         const displayStyle = data.content === "hideSpinner" ? "none" : "block";
         spinner.style.display = displayStyle;
