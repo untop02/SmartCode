@@ -1,10 +1,12 @@
 interface Message {
   content: string | Conversation[] | MessageContent[];
   sender: string;
+  index?: number;
 }
 interface MessageContent {
   role: string;
   content: string;
+  index?: number;
 }
 
 interface UserData {
@@ -15,8 +17,8 @@ interface Conversation {
   messages: MessageContent[];
 }
 interface SavedState {
-  inputText: string;
   historyIndex?: number;
+  storedConversations: Conversation[];
 }
 
 interface GlobalState {
@@ -28,7 +30,6 @@ interface Story {
   story: string[];
   clearStory(): void;
 }
-
 interface Vscode {
   postMessage(message: object): void;
 }

@@ -4,10 +4,8 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  background-color: #1f1f1f;
 }
 
-/*Tämä aiheuttaa ne merkit jos maalaa ruudun*/
 header {
   display: block;
   width: 100%;
@@ -32,16 +30,30 @@ header {
   overflow: auto;
 }
 
-#chat-container>#loader {
+#chat-container > #loader {
   margin-top: 8px;
+  align-self: center;
 }
 
-#chat-container>div>.user {
-  color: #c4b2b2;
+/*For lightmode*/
+.vscode-light #chat-container > div > .user,
+.vscode-high-contrast-light.vscode-high-contrast #chat-container > div > .user {
+  color: #000000;
   margin-top: 4px;
   border: gray;
   border-style: solid;
   margin-bottom: 32px;
+}
+
+/*For Darkmode*/
+.vscode-dark #chat-container > div > .user,
+.vscode-high-contrast #chat-container > div > .user {
+  color: #ffffff;
+  margin-top: 4px;
+  border: gray;
+  border-style: solid;
+  margin-bottom: 32px;
+  padding: 5px;
 }
 
 .copy-button {
@@ -56,22 +68,24 @@ header {
   cursor: pointer;
 }
 
-
 #history {
-  width: 160px; /* Fixed width */
-  overflow: auto; /* Enable overflow */
+  min-width: 91px;
+  max-width: 160px;
   margin: 8px;
   border: transparent;
   border-right: #303030;
   border-style: solid;
 }
 
-#history>button {
+.historyButtonActive {
+  background-color: red;
+}
+
+/* Common styles */
+#history > button {
   cursor: pointer;
   width: 100%;
-  background-color: transparent;
   text-align: center;
-  color: white;
   border: none;
   padding: 8px;
   text-overflow: ellipsis;
@@ -80,11 +94,40 @@ header {
   max-height: 96px;
 }
 
-#history>button:hover {
+#history > button:hover:not(.historyButtonActive) {
+  background-color: rgba(167, 163, 163, 0.589);
+}
+
+/* Disabled button styles for all themes */
+#newChat > button:disabled {
+  color: gray;
+}
+
+/* Light mode styles */
+.vscode-light #history > button:not(:disabled),
+.vscode-high-contrast-light.vscode-high-contrast
+  #history
+  > button:not(:disabled) {
+  color: black;
+}
+
+/* Dark mode styles */
+.vscode-dark #history > button:not(:disabled),
+.vscode-high-contrast #history > button:not(:disabled) {
+  color: white;
+}
+
+/* Dark mode styles */
+.vscode-dark #history > button:hover:not(.historyButtonActive),
+.vscode-high-contrast #history > button:hover:not(.historyButtonActive) {
   background-color: #303030;
 }
 
-#history>#clearChat {
+#history > button:not(.historyButtonActive) {
+  background-color: transparent;
+}
+
+#history > #clearChat {
   color: red;
 }
 
@@ -99,7 +142,6 @@ header {
   justify-content: center;
   align-items: center;
   padding: 8px;
-  background-color: #1f1f1f;
 }
 
 img {
@@ -109,23 +151,51 @@ img {
   margin-top: -24px;
   margin-bottom: -24px;
 }
-
+/* Common styles */
 #uInput {
   width: 100%;
-  background-color: #252525;
   border-radius: 8px;
   border-style: solid;
   min-height: fit-content;
-  color: white;
   resize: none;
+  padding: 12px 35px 0 10px;
 }
 
 #sendButton {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  color: whitesmoke;
-  background-color: #303030;
+}
+
+/* Light mode styles */
+.vscode-light #uInput,
+.vscode-high-contrast-light.vscode-high-contrast #uInput {
+  background-color: white;
+  color: black;
+}
+
+/* Light mode styles */
+.vscode-light #sendButton,
+.vscode-high-contrast-light.vscode-high-contrast #sendButton {
+  fill: rgb(116, 114, 114);
+}
+
+/* Dark mode styles */
+.vscode-dark #uInput,
+.vscode-high-contrast #uInput {
+  background-color: #252525;
+  color: white;
+}
+
+/* Dark mode styles */
+.vscode-dark #sendButton,
+.vscode-high-contrast #sendButton {
+  fill: white;
+}
+
+#sendButton:hover,
+.vscode-high-contrast-light.vscode-high-contrast #sendButton:hover {
+  fill: red;
 }
 
 #loader {
@@ -147,5 +217,17 @@ img {
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media screen and (min-width: 470px) {
+  #history {
+    min-width: 160px;
+    max-width: 160px;
+  }
+}
+@media screen and (max-width: 300px) {
+  #history {
+    display: none;
   }
 }

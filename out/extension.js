@@ -1,18 +1,18 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function (o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+        desc = { enumerable: true, get: function () { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
+}) : (function (o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function (o, v) {
     Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
+}) : function (o, v) {
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
@@ -70,8 +70,8 @@ class SmartCodeProvider {
                         vscode.window.showInformationMessage(`Sending: ${message.text}`);
                     }
                     break;
-                case "clear": //emptys chat context for ai api
-                    newConversation(this._view);
+                case "newConversation":
+                    newConversation();
                     break;
                 case "delete": //emptys chat context for ai api
                     this.history = [this.system_message];
@@ -81,7 +81,7 @@ class SmartCodeProvider {
                     getHistory(this._view);
                     break;
                 case "context":
-                    this.history = switchContext(message.index, this.history);
+                    this.history = switchContext(message.index);
                     this.history.unshift(this.system_message);
                     break;
             }
@@ -112,12 +112,12 @@ class SmartCodeProvider {
                     //gets reply from ai of user prompt
                     if (chunk.choices[0].delta.content) {
                         new_message.content += chunk.choices[0].delta.content;
-                        this._view?.webview.postMessage(createMessage(new_message.content, "stream")); //streams reply to html
+                        this._view?.webview.postMessage(createMessage(new_message.content, "stream", conversationIndex)); //streams reply to html
                     }
                 }
                 updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage(createMessage([usrInput, new_message], "complete"));
+                this._view?.webview.postMessage(createMessage([usrInput, new_message], "complete", conversationIndex));
                 this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
@@ -164,10 +164,11 @@ function getUUID() {
     }
     return userData.userID;
 }
-function createMessage(response, sender) {
+function createMessage(response, sender, index) {
     const message = {
         content: response,
         sender: sender,
+        index: index,
     };
     return message;
 }
@@ -213,12 +214,11 @@ function updateHistory(usrInput, answer, conversationIndex) {
         currentData.history = reversedHistory.toReversed();
     });
 }
-function newConversation(view) {
+function newConversation() {
     const filePath = `${__dirname}/user.json`;
     readWriteData(filePath, (currentData) => {
         if (currentData.history[currentData.history.length - 1].messages.length !== 0) {
             currentData.history.push({ messages: [] });
-            getHistory(view);
         }
     });
 }
@@ -248,11 +248,12 @@ function getHistory(view) {
         view?.webview.postMessage(createMessage(currentData.history.toReversed(), "history"));
     });
 }
-function switchContext(index, history) {
+function switchContext(index) {
     const filePath = `${__dirname}/user.json`;
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
-    history = [...reversedFile[index].messages.slice(-4)];
-    return history;
+    const contextHistory = [...reversedFile[index].messages.slice(-4)];
+    console.log(contextHistory);
+    return contextHistory;
 }
 //# sourceMappingURL=extension.js.map

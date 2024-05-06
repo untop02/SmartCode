@@ -26,7 +26,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   system_message: MessageContent = {
     //how how the language model acts
@@ -63,8 +63,8 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             vscode.window.showInformationMessage(`Sending: ${message.text}`);
           }
           break;
-        case "clear": //emptys chat context for ai api
-          newConversation(this._view);
+        case "newConversation":
+          newConversation();
           break;
         case "delete": //emptys chat context for ai api
           this.history = [this.system_message];
@@ -74,7 +74,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           getHistory(this._view);
           break;
         case "context":
-          this.history = switchContext(message.index, this.history);
+          this.history = switchContext(message.index);
           this.history.unshift(this.system_message);
           break;
       }
@@ -110,14 +110,14 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
           if (chunk.choices[0].delta.content) {
             new_message.content += chunk.choices[0].delta.content;
             this._view?.webview.postMessage(
-              createMessage(new_message.content, "stream")
+              createMessage(new_message.content, "stream", conversationIndex)
             ); //streams reply to html
           }
         }
         updateHistory(usrInput.content, new_message.content, conversationIndex);
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
         this._view?.webview.postMessage(
-          createMessage([usrInput, new_message], "complete")
+          createMessage([usrInput, new_message], "complete", conversationIndex)
         );
         this._view?.webview.postMessage(
           createMessage("hideSpinner", "spinner")
@@ -178,11 +178,13 @@ function getUUID(): string {
 
 function createMessage(
   response: string | Conversation[] | MessageContent[],
-  sender: string
+  sender: string,
+  index?: number
 ): Message {
   const message: Message = {
     content: response,
     sender: sender,
+    index: index,
   };
   return message;
 }
@@ -246,7 +248,7 @@ function updateHistory(
   });
 }
 
-function newConversation(view: vscode.WebviewView | undefined): void {
+function newConversation(): void {
   const filePath: string = `${__dirname}/user.json`;
 
   readWriteData(filePath, (currentData: UserData) => {
@@ -254,7 +256,6 @@ function newConversation(view: vscode.WebviewView | undefined): void {
       currentData.history[currentData.history.length - 1].messages.length !== 0
     ) {
       currentData.history.push({ messages: [] });
-      getHistory(view);
     }
   });
 }
@@ -268,8 +269,6 @@ function deleteHistory(view: vscode.WebviewView | undefined): void {
     getHistory(view);
   });
 }
-
-
 
 function getHistory(view: vscode.WebviewView | undefined): void {
   const filePath: string = `${__dirname}/user.json`;
@@ -291,16 +290,15 @@ function getHistory(view: vscode.WebviewView | undefined): void {
   });
 }
 
-function switchContext(
-  index: number,
-  history: [MessageContent]
-): [MessageContent] {
+function switchContext(index: number): [MessageContent] {
   const filePath = `${__dirname}/user.json`;
 
   const file: UserData = JSON.parse(fs.readFileSync(filePath, "utf8"));
   const reversedFile = file.history.toReversed();
+  const contextHistory = [...reversedFile[index].messages.slice(-4)] as [
+    MessageContent
+  ];
+  console.log(contextHistory);
 
-  history = [...reversedFile[index].messages.slice(-4)] as [MessageContent];
-
-  return history;
+  return contextHistory;
 }
