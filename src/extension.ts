@@ -63,10 +63,10 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
             vscode.window.showInformationMessage(`Sending: ${message.text}`);
           }
           break;
-        case "clear": //emptys chat context for ai api
+        case "newConversation":
           newConversation(this._view);
           break;
-        case "delete":
+        case "delete": //emptys chat context for ai api
           this.history = [this.system_message];
           deleteHistory(this._view);
           break;
@@ -117,7 +117,7 @@ class SmartCodeProvider implements vscode.WebviewViewProvider {
         updateHistory(usrInput.content, new_message.content, conversationIndex);
         this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
         this._view?.webview.postMessage(
-          createMessage([usrInput, new_message], "complete")
+          createMessage([usrInput, new_message], "complete", conversationIndex)
         );
         this._view?.webview.postMessage(
           createMessage("hideSpinner", "spinner")
@@ -178,11 +178,13 @@ function getUUID(): string {
 
 function createMessage(
   response: string | Conversation[] | MessageContent[],
-  sender: string
+  sender: string,
+  index?: number
 ): Message {
   const message: Message = {
     content: response,
     sender: sender,
+    index: index,
   };
   return message;
 }

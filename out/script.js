@@ -12,6 +12,7 @@ const newButton = document.getElementById("newChat");
 const globalState = {
     currentState: {
         historyIndex: 0,
+        storedConversations: [],
     },
     story: [],
     clearStory() {
@@ -44,6 +45,11 @@ function sendMessage() {
         text: inputField.value,
         index: conversationIndex,
     });
+    const active = document.getElementsByClassName("historyButtonActive")[0];
+    console.log();
+    if (active.innerText === "Current") {
+        active.innerText = inputField.value;
+    }
     inputField.value = "";
     console.log(globalState.currentState.historyIndex);
 }
@@ -72,7 +78,7 @@ newButton?.addEventListener("click", () => {
     if (!defaultButton || defaultButton.textContent === "Current") {
         return;
     }
-    vscode.postMessage({ command: "clear" });
+    vscode.postMessage({ command: "newConversation" });
     const createHistoryButton = (id) => {
         const button = document.createElement("button");
         button.classList.add("historyButton");
@@ -128,7 +134,12 @@ window?.addEventListener("message", (event) => {
                 break;
             }
             case "complete": {
+                const currentState = globalState.currentState;
                 const history = data.content;
+                if (data.index && currentState.storedConversations[data.index]) {
+                    const conversation = currentState.storedConversations[data.index];
+                    conversation.messages.push(...history);
+                }
                 formatOutput(history);
                 break;
             }
@@ -192,6 +203,7 @@ function formatOutput(history) {
 function setConversationActive() {
     const buttons = document.querySelectorAll(".historyButton, .historyButtonActive");
     const index = globalState.currentState.historyIndex;
+    console.log(`index is ${index}`);
     for (const button of buttons) {
         if (Number(button.id) === index) {
             button.className = "historyButtonActive";
@@ -203,28 +215,27 @@ function setConversationActive() {
 }
 function createHistoryButtons(conversations) {
     const currentState = globalState.currentState;
-    removeExistingButtons();
     if (currentState.historyIndex &&
         conversations.length < currentState.historyIndex) {
-        globalState.currentState.historyIndex = 0;
+        currentState.historyIndex = 0;
     }
-    conversations.forEach((conversation, index) => {
+    currentState.storedConversations = conversations;
+    for (const [index, conversation] of conversations.entries()) {
         const firstQuestion = conversation.messages[0];
         const button = document.createElement("button");
         button.classList.add("historyButton");
         button.id = String(index);
-        button.textContent =
-            firstQuestion !== undefined ? firstQuestion.content : "Current";
+        button.textContent = firstQuestion?.content || "Current";
         button.addEventListener("click", () => {
             currentState.historyIndex = Number(button.id);
             setState(currentState);
-            setHistory(conversation);
+            const clickedConversation = currentState.storedConversations[Number(button.id)];
+            setHistory(clickedConversation);
             setConversationActive();
             vscode.postMessage({ command: "context", index: button.id });
-            vscode.postMessage({ command: "clear" });
         });
         historyBar?.insertBefore(button, historyBar.lastElementChild);
-    });
+    }
     setConversationActive();
 }
 function removeExistingButtons() {

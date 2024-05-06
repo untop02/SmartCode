@@ -1,10 +1,12 @@
 interface Message {
   content: string | Conversation[] | MessageContent[];
   sender: string;
+  index?: number;
 }
 interface MessageContent {
   role: string;
   content: string;
+  index?: number;
 }
 
 interface UserData {
@@ -16,6 +18,7 @@ interface Conversation {
 }
 interface SavedState {
   historyIndex?: number;
+  storedConversations: Conversation[];
 }
 
 interface GlobalState {

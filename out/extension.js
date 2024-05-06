@@ -70,10 +70,10 @@ class SmartCodeProvider {
                         vscode.window.showInformationMessage(`Sending: ${message.text}`);
                     }
                     break;
-                case "clear": //emptys chat context for ai api
+                case "newConversation":
                     newConversation(this._view);
                     break;
-                case "delete":
+                case "delete": //emptys chat context for ai api
                     this.history = [this.system_message];
                     deleteHistory(this._view);
                     break;
@@ -117,7 +117,7 @@ class SmartCodeProvider {
                 }
                 updateHistory(usrInput.content, new_message.content, conversationIndex);
                 this.history.push(new_message); //saves ai response object to history array for context, allows user to reference previous ai answers
-                this._view?.webview.postMessage(createMessage([usrInput, new_message], "complete"));
+                this._view?.webview.postMessage(createMessage([usrInput, new_message], "complete", conversationIndex));
                 this._view?.webview.postMessage(createMessage("hideSpinner", "spinner"));
                 if (this.history.length > 11) {
                     //prompt history limit of 5 (5 prompt + 5 responses + 1 system rule)
@@ -164,10 +164,11 @@ function getUUID() {
     }
     return userData.userID;
 }
-function createMessage(response, sender) {
+function createMessage(response, sender, index) {
     const message = {
         content: response,
         sender: sender,
+        index: index,
     };
     return message;
 }
