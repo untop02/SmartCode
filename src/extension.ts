@@ -300,7 +300,7 @@ function switchContext(
   const file: UserData = JSON.parse(fs.readFileSync(filePath, "utf8"));
   const reversedFile = file.history.toReversed();
 
-  history = [...reversedFile[index].messages.slice(-4)] as [MessageContent];
+  history = [...reversedFile[index].messages.slice(-2)] as [MessageContent];
 
   return history;
 }

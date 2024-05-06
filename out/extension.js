@@ -252,7 +252,7 @@ function switchContext(index, history) {
     const filePath = `${__dirname}/user.json`;
     const file = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const reversedFile = file.history.toReversed();
-    history = [...reversedFile[index].messages.slice(-4)];
+    history = [...reversedFile[index].messages.slice(-2)];
     return history;
 }
 //# sourceMappingURL=extension.js.map

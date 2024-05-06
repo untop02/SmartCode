@@ -157,10 +157,19 @@ window?.addEventListener("message", (event) => {
         break;
       }
       case "spinner": {
+        console.log("WHAT", spinner.style.display);
         if (data.content === "hideSpinner") {
           spinner.style.display = "none";
+          const children = Array.prototype.slice.call(historyBar?.children);
+          for (const button of children) {
+            button.disabled = false;
+          }
         } else {
           spinner.style.display = "block";
+          const children = Array.prototype.slice.call(historyBar?.children);
+          for (const button of children) {
+            button.disabled = true;
+          }
         }
       }
     }
